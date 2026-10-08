@@ -20,10 +20,20 @@ def crop_asset(name, bbox, out_size, mode="fade", quality=86):
         d.rounded_rectangle((5,5,w-5,h-5),radius=10,fill=255)
         mask=mask.filter(ImageFilter.GaussianBlur(radius=11))
     elif mode=="arch":
-        # Architectural window isolated from the reference title area.
-        # Decorative backdrop only: keep it pale behind interactive UI.
-        d.rounded_rectangle((8,2,w-8,h-7),radius=32,fill=205)
-        mask=mask.filter(ImageFilter.GaussianBlur(radius=18))
+        # Radial edge transparency avoids a visible square photo patch behind
+        # the Android header. The original stone arch remains in the center.
+        pixels = mask.load()
+        for yy in range(h):
+            for xx in range(w):
+                edge = min(
+                    xx / max(1, w * .25), (w - 1 - xx) / max(1, w * .25),
+                    yy / max(1, h * .28), (h - 1 - yy) / max(1, h * .28),
+                    1.,
+                )
+                edge = max(0., min(1., edge))
+                smooth = edge * edge * (3. - 2. * edge)
+                pixels[xx, yy] = int(174 * smooth)
+        mask=mask.filter(ImageFilter.GaussianBlur(radius=3))
     elif mode=="reading":
         d.rounded_rectangle((8,8,w-8,h-8),radius=15,fill=255)
         mask=mask.filter(ImageFilter.GaussianBlur(radius=8))
