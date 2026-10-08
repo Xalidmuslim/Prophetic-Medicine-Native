@@ -32,5 +32,16 @@ adb shell input swipe $((W/2)) $((H*3/4)) $((W/2)) $((H/3)) 380
 sleep 2
 adb shell screencap -p /sdcard/medicine_sections.png
 adb pull /sdcard/medicine_sections.png screenshots/home_sections.png
+# Visit the book reader as well; the old floating Aa action used to obscure
+# the next-chapter button. Store a screenshot for a visual regression review.
+adb shell input tap $((W*9/10)) "$NAV_Y"
+sleep 2
+adb shell input tap $((W/2)) $((H*17/100))
+sleep 2
+adb shell input tap $((W/2)) $((H*18/100))
+sleep 2
+adb shell screencap -p /sdcard/medicine_reader.png
+adb pull /sdcard/medicine_reader.png screenshots/reader.png
+adb shell pidof "$PACKAGE"
 adb shell logcat -d -t 800 '*:E' > screenshots/logcat_errors.txt || true
 file screenshots/*.png
