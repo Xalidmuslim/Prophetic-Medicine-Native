@@ -137,8 +137,8 @@ fun ReferenceHomeScreen(
                         painter = painterResource(R.drawable.medicine_photo_hero),
                         contentDescription = null,
                         modifier = Modifier.align(Alignment.BottomEnd)
-                            .width(maxWidth * .65f).height(210.dp),
-                        contentScale = ContentScale.Fit,
+                            .width(maxWidth * .80f).height(215.dp),
+                        contentScale = ContentScale.Crop,
                     )
                     // Photographic crop stays visible at right, while the ivory
                     // overlay guarantees contrast behind the Russian heading.
@@ -146,16 +146,16 @@ fun ReferenceHomeScreen(
                         Modifier.fillMaxSize().background(
                             Brush.horizontalGradient(
                                 0f to bg,
-                                .43f to bg,
-                                .61f to bg.copy(alpha = .96f),
-                                .81f to bg.copy(alpha = .31f),
+                                .24f to bg,
+                                .43f to bg.copy(alpha = .87f),
+                                .63f to bg.copy(alpha = .13f),
                                 1f to Color.Transparent,
                             )
                         )
                     )
                     Column(
                         modifier = Modifier.align(Alignment.TopStart)
-                            .fillMaxWidth(.65f)
+                            .fillMaxWidth(.61f)
                             .padding(start = 6.dp, top = 8.dp),
                     ) {
                         Text(
@@ -190,14 +190,14 @@ fun ReferenceHomeScreen(
                     shadowElevation = 2.dp,
                 ) {
                     Row(
-                        Modifier.fillMaxWidth().heightIn(min = 185.dp)
-                            .padding(start = 8.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+                        Modifier.fillMaxWidth().heightIn(min = 168.dp)
+                            .padding(start = 6.dp, end = 11.dp, top = 8.dp, bottom = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Image(
                             painterResource(R.drawable.medicine_photo_reading), null,
-                            modifier = Modifier.width(122.dp).height(172.dp),
-                            contentScale = ContentScale.Fit,
+                            modifier = Modifier.width(122.dp).height(154.dp),
+                            contentScale = ContentScale.Crop,
                         )
                         Spacer(Modifier.width(5.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
