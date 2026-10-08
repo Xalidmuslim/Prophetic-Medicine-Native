@@ -111,6 +111,15 @@ jobs:
                       )''',1)
           assert 'onGlobalSearch = { navigateToHeartPrayer(context, "search") }' in s
           s=s.replace('onGlobalSearch = { navigateToHeartPrayer(context, "search") }', 'onGlobalSearch = { navigate(Route.Search) }',1)
+          icon_imports = (
+              'import androidx.compose.material.icons.filled.Home\n'
+              'import androidx.compose.material.icons.filled.GridView\n'
+              'import androidx.compose.material.icons.filled.Search\n'
+              'import androidx.compose.material.icons.filled.BookmarkBorder\n'
+              'import androidx.compose.material.icons.filled.MoreHoriz\n'
+          )
+          assert 'import androidx.compose.material3.Icon' in s
+          s=s.replace('import androidx.compose.material3.Icon', icon_imports + 'import androidx.compose.material3.Icon', 1)
           start=s.index('private fun navigateToHeartPrayer(')
           s=s[:start]+'''@Composable
           private fun StandaloneBottomNav(
