@@ -1,0 +1,60 @@
+name: Prophetic Medicine Native Preview APK
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout independent Android project
+        uses: actions/checkout@v4
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Android SDK 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Verify no webview or full-text book committed
+        shell: bash
+        run: |
+          test ! -f app/src/main/assets/book.json
+          ! grep -R -E 'android.webkit.WebView|import android.webkit.WebView' app/src/main/java
+          grep -F 'com.xalid.meditsinaproroka.nativeapp.preview' app/build.gradle.kts
+      - name: Unit tests and compile native APK
+        run: gradle :app:testDebugUnitTest :app:assembleDebug --stacktrace --no-daemon
+      - name: Validate Android APK
+        run: |
+          set -euo pipefail
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          unzip -t app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload PREVIEW APK (book text excluded)
+        id: apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: Prophetic-Medicine-Native-PREVIEW-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Download link
+        env:
+          APK_URL: ${{ steps.apk.outputs.artifact-url }}
+        run: echo "[Download native preview APK (book not included)]($APK_URL)" >> "$GITHUB_STEP_SUMMARY"
