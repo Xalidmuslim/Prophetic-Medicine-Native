@@ -45,7 +45,7 @@ jobs:
           disable-animations: false
           script: |
             adb install -r app/build/outputs/apk/debug/app-debug.apk
-            set -euo pipefail
+            set -eu
             mkdir -p screenshots
             adb shell wm size
             adb shell am start -n com.xalid.meditsinaproroka.nativeapp.modulecopy.smooth/com.xalid.meditsinaproroka.nativeapp.MainActivity
@@ -53,7 +53,8 @@ jobs:
             adb shell screencap -p /sdcard/home.png
             adb pull /sdcard/home.png screenshots/home.png
             SIZE=$(adb shell wm size | tr -d '\r' | grep 'Physical size' | sed -E 's/.*: ([0-9]+)x([0-9]+)/\1 \2/')
-            read -r W H <<< "$SIZE"
+            W=$(printf "%s" "$SIZE" | cut -d " " -f1)
+            H=$(printf "%s" "$SIZE" | cut -d " " -f2)
             # Relative screen coordinates, independent of emulator resolution.
             NAV_Y=$((H-135))
             adb shell input tap $((W*9/10)) "$NAV_Y"
