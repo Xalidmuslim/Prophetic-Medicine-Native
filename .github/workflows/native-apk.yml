@@ -54,7 +54,7 @@ jobs:
           assert len(data['topics'])==15
           print("Book: 111 chapters, 15 topics; source preserved")
           PY
-          grep -F 'com.xalid.meditsinaproroka.nativeapp.modulecopy' app/build.gradle
+          grep -F 'com.xalid.meditsinaproroka.nativeapp.premiumreview' app/build.gradle
           ! grep -R 'navigateToHeartPrayer' app/src/main/java/
           test ! -e app/src/main/java/app/alfatiha/tafsir/MainActivity.kt
       - name: Native Kotlin Gradle build

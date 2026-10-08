@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         minSdk 24
-        applicationId 'com.xalid.meditsinaproroka.nativeapp.modulecopy.smooth'
+        applicationId 'com.xalid.meditsinaproroka.nativeapp.premiumreview'
         targetSdk 35
-        versionCode 2
-        versionName '1.0.1-smooth-preview'
+        versionCode 3
+        versionName '1.0.2-premium-review'
     }
 
     buildFeatures {
