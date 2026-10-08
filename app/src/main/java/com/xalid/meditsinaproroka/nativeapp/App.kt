@@ -249,9 +249,14 @@ private fun StandaloneBottomNav(
     val outline = MaterialTheme.colorScheme.outline
     val surface = MaterialTheme.colorScheme.surface
     val selected = MaterialTheme.colorScheme.primary
-    Surface(color = surface, shadowElevation = 1.dp) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 5.dp),
+        color = surface,
+        shape = RoundedCornerShape(22.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, outline.copy(alpha = .70f)),
+        shadowElevation = 3.dp,
+    ) {
         Column {
-            androidx.compose.material3.HorizontalDivider(color = outline.copy(alpha = .75f), thickness = .7.dp)
             Row(
                 modifier = Modifier.fillMaxWidth()
                     .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
@@ -283,6 +288,14 @@ private fun StandaloneBottomNav(
                             color = color,
                             maxLines = 1,
                         )
+                        if (item.selected) {
+                            Spacer(Modifier.height(2.dp))
+                            Box(
+                                Modifier.width(22.dp).height(3.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(selected)
+                            )
+                        }
                     }
                 }
             }
