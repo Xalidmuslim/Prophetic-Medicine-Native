@@ -187,54 +187,23 @@ fun BookScreen(book: BookData, modifier: Modifier, back: () -> Unit, open: (Stri
 
 @Composable
 fun TopicsScreen(book: BookData, modifier: Modifier, open: (String) -> Unit) {
-    Column(modifier.fillMaxSize()) {
-        WebHeader("Темы", "Изучение поверх полного текста")
+    Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        WebHeader("Темы", "${book.topics.size} тематических разделов")
         LazyColumn(
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 28.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 22.dp),
+            verticalArrangement = Arrangement.spacedBy(9.dp),
         ) {
             item {
-                Column(Modifier.padding(horizontal = 2.dp)) {
-                    Text(
-                        "ТЕМАТИЧЕСКАЯ НАВИГАЦИЯ",
-                        color = MaterialTheme.colorScheme.primary,
-                        fontFamily = WebModernFont,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.2.sp,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        "По смыслу, не только по порядку",
-                        fontFamily = WebLiterataFont,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 25.sp,
-                        lineHeight = 31.sp,
-                    )
-                    Spacer(Modifier.height(9.dp))
-                    Text(
-                        "Одна глава может входить сразу в несколько тем.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontFamily = WebSansFont,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp,
-                        lineHeight = 19.sp,
-                    )
-                }
+                Text(
+                    "Темы объединяют связанные главы полного текста",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = WebModernFont,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 2.dp),
+                )
             }
-            items((book.topics.size + 1) / 2) { rowIndex ->
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    val first = book.topics.getOrNull(rowIndex * 2)
-                    val second = book.topics.getOrNull(rowIndex * 2 + 1)
-                    if (first != null) {
-                        WebTopicCard(first, Modifier.weight(1f)) { open(first.id) }
-                    }
-                    if (second != null) {
-                        WebTopicCard(second, Modifier.weight(1f)) { open(second.id) }
-                    } else {
-                        Spacer(Modifier.weight(1f))
-                    }
-                }
+            items(book.topics, key = { it.id }) { topic ->
+                WebTopicCard(topic, Modifier.fillMaxWidth()) { open(topic.id) }
             }
         }
     }
@@ -244,37 +213,39 @@ fun TopicsScreen(book: BookData, modifier: Modifier, open: (String) -> Unit) {
 private fun WebTopicCard(topic: Topic, modifier: Modifier, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        modifier = modifier.heightIn(min = 148.dp),
+        modifier = modifier.heightIn(min = 78.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(19.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shadowElevation = 1.dp,
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(R.drawable.premium_ic_topics),
+                painter = androidx.compose.ui.res.painterResource(R.drawable.medicine_photo_ic_topics),
                 contentDescription = null,
-                modifier = Modifier.size(38.dp),
+                modifier = Modifier.size(53.dp),
             )
-            Text(
-                topic.title,
-                fontFamily = WebModernFont,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.5.sp,
-                lineHeight = 18.sp,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                "${topic.chapterIds.size} глав →",
-                color = MaterialTheme.colorScheme.primary,
-                fontFamily = WebModernFont,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 11.5.sp,
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    topic.title, fontFamily = WebModernFont,
+                    fontWeight = FontWeight.SemiBold, fontSize = 15.sp,
+                    lineHeight = 19.sp, maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    "${topic.chapterIds.size} глав",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 11.5.sp,
+                )
+            }
+            Icon(
+                Icons.Default.ChevronRight, contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

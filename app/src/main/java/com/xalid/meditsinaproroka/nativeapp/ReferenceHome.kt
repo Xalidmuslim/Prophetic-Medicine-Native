@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -138,6 +139,19 @@ fun ReferenceHomeScreen(
                         modifier = Modifier.align(Alignment.BottomEnd)
                             .width(maxWidth * .65f).height(210.dp),
                         contentScale = ContentScale.Fit,
+                    )
+                    // Photographic crop stays visible at right, while the ivory
+                    // overlay guarantees contrast behind the Russian heading.
+                    Box(
+                        Modifier.fillMaxSize().background(
+                            Brush.horizontalGradient(
+                                0f to bg,
+                                .43f to bg,
+                                .61f to bg.copy(alpha = .96f),
+                                .81f to bg.copy(alpha = .31f),
+                                1f to Color.Transparent,
+                            )
+                        )
                     )
                     Column(
                         modifier = Modifier.align(Alignment.TopStart)
