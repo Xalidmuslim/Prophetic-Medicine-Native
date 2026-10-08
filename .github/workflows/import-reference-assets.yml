@@ -23,7 +23,8 @@ jobs:
           test -s app/src/main/res/drawable-nodpi/medicine_photo_hero.webp
           test -s app/src/main/res/drawable-nodpi/medicine_photo_reading.webp
           test -s app/src/main/res/drawable-nodpi/medicine_photo_treatments.webp
-          test "$(find app/src/main/res/drawable-nodpi -name 'medicine_photo_*.webp' | wc -l)" -eq 9
+          test -s app/src/main/res/drawable-nodpi/medicine_photo_app_icon.webp
+          test "$(find app/src/main/res/drawable-nodpi -name 'medicine_photo_*.webp' | wc -l)" -eq 10
       - name: Commit local Android art assets to THIS branch only
         run: |
           git config user.name 'github-actions[bot]'
