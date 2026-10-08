@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -645,23 +647,23 @@ private fun WebChip(label: String, onClick: () -> Unit) {
     }
 }
 
-private data class MoreItem(val iconId: Int, val title: String, val subtitle: String, val route: Route)
+private data class MoreItem(val icon: ImageVector, val title: String, val subtitle: String, val route: Route)
 
 @Composable
 fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
     val rows = listOf(
-        MoreItem(R.drawable.medicine_more_00, "Оглавление книги", "111 глав в оригинальном порядке", Route.Book),
-        MoreItem(R.drawable.medicine_more_01, "Как лечили / что применялось", "Состояния и методы из лечебных глав", Route.Treatments),
-        MoreItem(R.drawable.medicine_more_02, "Быстрые подборки", "Головная боль, сон, тревога, рукъя и другое", Route.Collections),
-        MoreItem(R.drawable.medicine_more_03, "Справочник средств", "Переходы к местам полного текста", Route.Remedies),
-        MoreItem(R.drawable.medicine_more_04, "Словарь терминов", "Рукъя, кыст, тальбина и другое", Route.Glossary),
-        MoreItem(R.drawable.medicine_more_05, "Хадисы и источники", "Источники, указанные в тексте", Route.Hadiths),
-        MoreItem(R.drawable.medicine_more_06, "Мои заметки", "Выделения и личные записи", Route.Notes),
-        MoreItem(R.drawable.medicine_more_07, "История чтения", "Недавно открытые главы", Route.History),
-        MoreItem(R.drawable.medicine_more_08, "Чтение без интернета", "Книга доступна без подключения к сети", Route.Offline),
-        MoreItem(R.drawable.medicine_more_09, "Настройки чтения", "Шрифт, интервал и оформление", Route.Settings),
-        MoreItem(R.drawable.medicine_more_10, "О книге", "Автор, содержание и важное примечание", Route.About),
-        MoreItem(R.drawable.medicine_more_11, "Об издании", "Состав книги и указанные источники", Route.Source),
+        MoreItem(Icons.Outlined.MenuBook, "Оглавление книги", "111 глав в оригинальном порядке", Route.Book),
+        MoreItem(Icons.Outlined.Healing, "Как лечили / что применялось", "Состояния и методы из лечебных глав", Route.Treatments),
+        MoreItem(Icons.Outlined.Dashboard, "Быстрые подборки", "Головная боль, сон, тревога, рукъя и другое", Route.Collections),
+        MoreItem(Icons.Outlined.Science, "Справочник средств", "Переходы к местам полного текста", Route.Remedies),
+        MoreItem(Icons.Outlined.Translate, "Словарь терминов", "Рукъя, кыст, тальбина и другое", Route.Glossary),
+        MoreItem(Icons.Outlined.FactCheck, "Хадисы и источники", "Источники, указанные в тексте", Route.Hadiths),
+        MoreItem(Icons.Outlined.EditNote, "Мои заметки", "Выделения и личные записи", Route.Notes),
+        MoreItem(Icons.Outlined.History, "История чтения", "Недавно открытые главы", Route.History),
+        MoreItem(Icons.Outlined.WifiOff, "Чтение без интернета", "Книга доступна без подключения к сети", Route.Offline),
+        MoreItem(Icons.Outlined.Tune, "Настройки чтения", "Шрифт, интервал и оформление", Route.Settings),
+        MoreItem(Icons.Outlined.Info, "О книге", "Автор, содержание и важное примечание", Route.About),
+        MoreItem(Icons.Outlined.Description, "Об издании", "Состав книги и указанные источники", Route.Source),
     )
     Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         WebHeader("Ещё", settings = { navigate(Route.Settings) })
@@ -682,12 +684,20 @@ fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
                             .padding(horizontal = 12.dp, vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Image(
-                            painter = painterResource(row.iconId),
-                            contentDescription = null,
-                            modifier = Modifier.size(46.dp),
-                            contentScale = ContentScale.Fit,
-                        )
+                        Surface(
+                            modifier = Modifier.size(42.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = row.icon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
