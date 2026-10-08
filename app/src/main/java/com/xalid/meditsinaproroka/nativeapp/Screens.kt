@@ -206,10 +206,10 @@ fun TopicsScreen(book: BookData, modifier: Modifier, open: (String) -> Unit) {
                     Spacer(Modifier.height(10.dp))
                     Text(
                         "По смыслу, не только по порядку",
-                        fontFamily = WebModernFont,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 26.sp,
-                        lineHeight = 30.sp,
+                        fontFamily = WebLiterataFont,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 25.sp,
+                        lineHeight = 31.sp,
                     )
                     Spacer(Modifier.height(9.dp))
                     Text(
@@ -244,33 +244,35 @@ fun TopicsScreen(book: BookData, modifier: Modifier, open: (String) -> Unit) {
 private fun WebTopicCard(topic: Topic, modifier: Modifier, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        modifier = modifier.heightIn(min = 152.dp),
+        modifier = modifier.heightIn(min = 148.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(19.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shadowElevation = 1.dp,
     ) {
-        Column(Modifier.padding(15.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(R.drawable.premium_ic_topics),
+                contentDescription = null,
+                modifier = Modifier.size(38.dp),
+            )
             Text(
                 topic.title,
                 fontFamily = WebModernFont,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 16.5.sp,
-                lineHeight = 19.sp,
-            )
-            Spacer(Modifier.height(7.dp))
-            Text(
-                "Связанные главы полного текста",
+                fontSize = 14.5.sp,
+                lineHeight = 18.sp,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontFamily = WebSansFont,
-                fontWeight = FontWeight.Medium,
-                fontSize = 11.5.sp,
-                lineHeight = 15.sp,
             )
             Text(
                 "${topic.chapterIds.size} глав →",
                 color = MaterialTheme.colorScheme.primary,
-                fontFamily = WebSansFont,
+                fontFamily = WebModernFont,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 11.5.sp,
             )
