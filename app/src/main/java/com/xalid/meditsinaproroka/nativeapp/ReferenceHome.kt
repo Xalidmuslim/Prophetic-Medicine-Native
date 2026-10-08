@@ -206,7 +206,7 @@ fun ReferenceHomeScreen(
                     Row(
                         Modifier.fillMaxWidth()
                             .background(Brush.horizontalGradient(
-                                0f to Color(0xFFE9E9DE),
+                                0f to Color(0xFFF0EBE1),
                                 .46f to surface,
                                 1f to surface,
                             ))
@@ -215,7 +215,7 @@ fun ReferenceHomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Image(
-                            painterResource(R.drawable.medicine_photo_reading), null,
+                            painterResource(R.drawable.medicine_photo_reading_new), null,
                             modifier = Modifier.width(111.dp).height(142.dp),
                             contentScale = ContentScale.Fit,
                         )
@@ -310,15 +310,15 @@ fun ReferenceHomeScreen(
                 ) {
                     Row(Modifier.fillMaxWidth()
                         .background(Brush.horizontalGradient(
-                            0f to Color(0xFFDDE6DB),
-                            .48f to Color(0xFFEAECE0),
-                            1f to Color(0xFFE0E7DD),
+                            0f to Color(0xFFF2EFE7),
+                            .48f to Color(0xFFF6F2E8),
+                            1f to Color(0xFFF1EFE5),
                         ))
                         .padding(start=2.dp,end=12.dp,top=4.dp,bottom=4.dp),
                         verticalAlignment=Alignment.CenterVertically) {
                         Image(
-                            painterResource(R.drawable.medicine_photo_treatments), null,
-                            Modifier.size(width=116.dp,height=80.dp),
+                            painterResource(R.drawable.medicine_photo_treatments_new), null,
+                            Modifier.size(width=122.dp,height=78.dp),
                             contentScale = ContentScale.Fit,
                         )
                         Spacer(Modifier.width(2.dp))
@@ -392,7 +392,7 @@ private fun ReferenceSectionCard(
         ) {
             Image(
                 painterResource(section.photoRes), null,
-                Modifier.size(width=54.dp,height=61.dp),
+                Modifier.size(width=54.dp,height=61.dp).padding(2.dp),
                 contentScale=ContentScale.Fit,
             )
             Spacer(Modifier.width(3.dp))
