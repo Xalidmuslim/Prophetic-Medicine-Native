@@ -15,8 +15,15 @@ def crop_asset(name, bbox, out_size, mode="fade", quality=86):
     mask=Image.new("L",(w,h),0)
     d=ImageDraw.Draw(mask)
     if mode=="hero":
-        d.rectangle((max(12,int(w*.14)),8,w-4,h-12),fill=255)
-        mask=mask.filter(ImageFilter.GaussianBlur(radius=19))
+        # Keep the complete mortar/pestle and oil composition. Fade only the
+        # actual asset edges; Android Compose handles the remaining text fade.
+        d.rounded_rectangle((5,5,w-5,h-5),radius=10,fill=255)
+        mask=mask.filter(ImageFilter.GaussianBlur(radius=11))
+    elif mode=="arch":
+        # Architectural window isolated from the reference title area.
+        # Decorative backdrop only: keep it pale behind interactive UI.
+        d.rounded_rectangle((8,2,w-8,h-7),radius=32,fill=205)
+        mask=mask.filter(ImageFilter.GaussianBlur(radius=18))
     elif mode=="reading":
         d.rounded_rectangle((8,8,w-8,h-8),radius=15,fill=255)
         mask=mask.filter(ImageFilter.GaussianBlur(radius=8))
@@ -31,7 +38,10 @@ def crop_asset(name, bbox, out_size, mode="fade", quality=86):
     rgba.save(output,format="WEBP",quality=quality,method=6)
     assert output.stat().st_size>700
     print(name,output.stat().st_size, out_size)
-crop_asset("medicine_photo_hero",(580,145,1018,425),(438,280),"hero",88)
+# Source is the exact owner reference. Previous 438x280 crop discarded
+# background and Compose cropped the photograph a second time.
+crop_asset("medicine_photo_hero",(555,136,1024,440),(469,304),"hero",91)
+crop_asset("medicine_photo_arch",(686,0,912,168),(226,168),"arch",90)
 crop_asset("medicine_photo_reading",(39,476,304,761),(265,285),"reading",90)
 crop_asset("medicine_photo_treatments",(43,875,355,1008),(312,133),"therapy",88)
 crop_asset("medicine_photo_app_icon",(52,17,210,170),(160,155),"icon",92)
@@ -48,5 +58,5 @@ for name,box in icons.items():
 with open("design/REFERENCE_ASSET_PROVENANCE.md","w",encoding="utf-8") as f:
     f.write("# Original user-provided visual reference\n\n")
     f.write("Source: the visual reference supplied by the app owner on 2026-10-08 (1024 x 1536).\n")
-    f.write("Ten offline alpha-masked WebP photos cropped from that source: app icon, hero, book, remedy, six icons.\n")
+    f.write("Eleven offline alpha-masked WebP photos cropped from that source: app icon, uncropped hero, architecture, book, remedy, six icons.\n")
     f.write("No user book text, settings, reader screens or other assets are modified.\n")
