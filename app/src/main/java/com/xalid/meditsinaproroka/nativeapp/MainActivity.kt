@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +40,12 @@ private data class MedicineLaunchState(
 )
 
 class MainActivity : ComponentActivity() {
+    // A platform splash covers the initial book parse, never a text interstitial.
+    @Volatile private var initialScreenReady = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splash = installSplashScreen()
+        splash.setKeepOnScreenCondition { !initialScreenReady }
         super.onCreate(savedInstanceState)
         configureActivityTransitions()
 
@@ -83,6 +90,14 @@ class MainActivity : ComponentActivity() {
             }
 
             val state = launchState
+            LaunchedEffect(state) {
+                if (state != null) {
+                    // Allow Compose one frame to commit the actual home/error screen
+                    // before releasing Android's splash on the next pre-draw.
+                    withFrameNanos { }
+                    initialScreenReady = true
+                }
+            }
             MedicinaTheme(state?.store?.settings?.theme ?: launchTheme) {
                 if (state == null) {
                     BookLoadingScreen()

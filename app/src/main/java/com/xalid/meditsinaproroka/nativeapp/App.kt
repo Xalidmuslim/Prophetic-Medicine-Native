@@ -8,6 +8,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -67,6 +70,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun MedicinaApp(book: BookData, store: AppStore) {
     var current by remember { mutableStateOf<Route>(Route.Home) }
+    var navigatingBack by remember { mutableStateOf(false) }
     val backStack = remember { mutableStateListOf<Route>() }
     val screenStateHolder = rememberSaveableStateHolder()
     var searchQuery by remember { mutableStateOf("") }
@@ -76,15 +80,22 @@ fun MedicinaApp(book: BookData, store: AppStore) {
     val activity = context as? Activity
 
     fun navigate(route: Route, push: Boolean = true) {
-        if (push && current != route) backStack.add(current)
+        if (route == current) return
+        navigatingBack = false
+        if (push) backStack.add(current)
         current = route
     }
 
     fun goBack() {
-        if (backStack.isNotEmpty()) current = backStack.removeAt(backStack.lastIndex)
+        if (backStack.isNotEmpty()) {
+            navigatingBack = true
+            current = backStack.removeAt(backStack.lastIndex)
+        }
     }
 
     fun root(route: Route) {
+        if (route == current && backStack.isEmpty()) return
+        navigatingBack = route == Route.Home && current != Route.Home
         backStack.clear()
         current = route
     }
@@ -114,13 +125,20 @@ fun MedicinaApp(book: BookData, store: AppStore) {
         AnimatedContent(
             targetState = current,
             transitionSpec = {
-                (
-                    fadeIn(animationSpec = tween(150)) +
-                        scaleIn(initialScale = 0.992f, animationSpec = tween(150))
-                ).togetherWith(
-                    fadeOut(animationSpec = tween(150)) +
-                        scaleOut(targetScale = 0.996f, animationSpec = tween(150))
-                ).using(SizeTransform(clip = false))
+                // A modest directional slide + fade is clearer than an almost
+                // invisible scale. No animated content-size remeasurement: it
+                // can stall on a reader containing many selectable text views.
+                val enter = fadeIn(animationSpec = tween(180)) +
+                    slideInHorizontally(
+                        initialOffsetX = { width -> if (navigatingBack) -width / 12 else width / 12 },
+                        animationSpec = tween(220, easing = FastOutSlowInEasing)
+                    )
+                val exit = fadeOut(animationSpec = tween(155)) +
+                    slideOutHorizontally(
+                        targetOffsetX = { width -> if (navigatingBack) width / 18 else -width / 18 },
+                        animationSpec = tween(190, easing = FastOutSlowInEasing)
+                    )
+                enter togetherWith exit
             },
             label = "sectionTransition",
         ) { route ->

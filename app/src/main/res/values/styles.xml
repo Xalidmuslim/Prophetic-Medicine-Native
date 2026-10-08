@@ -7,4 +7,9 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:fontFamily">sans</item>
     </style>
+    <style name="Theme.MedicinaSplash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#F4EFE5</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/medicine_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.MedicinaProrokaNative</item>
+    </style>
 </resources>
