@@ -32,7 +32,7 @@ private fun ChapterRow(chapter: Chapter, onClick: () -> Unit, trailing: String? 
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -246,7 +246,7 @@ private fun WebTopicCard(topic: Topic, modifier: Modifier, onClick: () -> Unit) 
         onClick = onClick,
         modifier = modifier.heightIn(min = 152.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(Modifier.padding(15.dp)) {
@@ -435,7 +435,7 @@ fun RemediesScreen(book: BookData, modifier: Modifier, back: () -> Unit, open: (
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
                 ) {
                     Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
@@ -601,7 +601,7 @@ private fun CollectionGridCard(col: BookCollection, modifier: Modifier, onClick:
         onClick = onClick,
         modifier = modifier.heightIn(min = 150.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(Modifier.padding(15.dp)) {
@@ -709,7 +709,7 @@ fun TreatmentsScreen(book: BookData, modifier: Modifier, back: () -> Unit, open:
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         if (treatment.category.isNotBlank()) {
@@ -740,7 +740,7 @@ fun GlossaryScreen(book: BookData, modifier: Modifier, back: () -> Unit, open: (
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(13.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                         Text(term.term, fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)

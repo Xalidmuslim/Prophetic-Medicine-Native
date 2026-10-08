@@ -144,7 +144,7 @@ fun MedicinaApp(book: BookData, store: AppStore) {
         ) { route ->
             screenStateHolder.SaveableStateProvider(routeStateKey(route)) {
                 when (route) {
-                Route.Home -> WebHomeScreen(
+                Route.Home -> PremiumHomeScreen(
                     book = book,
                     store = store,
                     modifier = modifier,
@@ -238,47 +238,53 @@ private fun StandaloneBottomNav(
     onBookmarks: () -> Unit,
     onMore: () -> Unit,
 ) {
-    data class NavItem(
-        val label: String,
-        val icon: androidx.compose.ui.graphics.vector.ImageVector,
-        val selected: Boolean,
-        val action: () -> Unit,
-    )
+    data class NavItem(val label: String, val iconId: Int, val selected: Boolean, val action: () -> Unit)
     val items = listOf(
-        NavItem("Главная", androidx.compose.material.icons.Icons.Default.Home, current == Route.Home, onHome),
-        NavItem("Темы", androidx.compose.material.icons.Icons.Default.GridView, current == Route.Topics, onTopics),
-        NavItem("Поиск", androidx.compose.material.icons.Icons.Default.Search, current == Route.Search, onSearch),
-        NavItem("Закладки", androidx.compose.material.icons.Icons.Default.BookmarkBorder, current == Route.Bookmarks, onBookmarks),
-        NavItem("Ещё", androidx.compose.material.icons.Icons.Default.MoreHoriz, current == Route.More, onMore),
+        NavItem("Главная", R.drawable.premium_ic_home, current == Route.Home, onHome),
+        NavItem("Темы", R.drawable.premium_ic_topics, current == Route.Topics, onTopics),
+        NavItem("Поиск", R.drawable.premium_ic_search, current == Route.Search, onSearch),
+        NavItem("Закладки", R.drawable.premium_ic_bookmark, current == Route.Bookmarks, onBookmarks),
+        NavItem("Ещё", R.drawable.premium_ic_more, current == Route.More, onMore),
     )
-    val dark = MaterialTheme.colorScheme.background.red < 0.25f
-    val background = if (dark) Color(0xFF1F2522) else Color(0xFFFBF7F0)
-    val muted = if (dark) Color(0xFFAAB3AD) else Color(0xFF55524C)
-    val shape = RoundedCornerShape(18.dp)
-    Row(
-        modifier = Modifier.fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-            .padding(horizontal = 8.dp, vertical = 5.dp)
-            .height(69.dp)
-            .shadow(2.dp, shape)
-            .clip(shape)
-            .background(background),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        items.forEach { item ->
-            val color = if (item.selected) Color(0xFF356D57) else muted
-            Column(
-                modifier = Modifier.weight(1f).fillMaxHeight().clickable { item.action() }
-                    .padding(top = 4.dp, bottom = 2.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+    val outline = MaterialTheme.colorScheme.outline
+    val surface = MaterialTheme.colorScheme.surface
+    val selected = MaterialTheme.colorScheme.primary
+    Surface(color = surface, shadowElevation = 1.dp) {
+        Column {
+            androidx.compose.material3.HorizontalDivider(color = outline.copy(alpha = .75f), thickness = .7.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                    .height(62.dp)
+                    .padding(horizontal = 5.dp, vertical = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                androidx.compose.material3.Icon(
-                    imageVector = item.icon, contentDescription = item.label,
-                    modifier = Modifier.size(24.dp), tint = color
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(item.label, fontSize = 11.sp, color = color, maxLines = 1)
+                items.forEach { item ->
+                    val color = if (item.selected) selected else MaterialTheme.colorScheme.onSurfaceVariant
+                    Column(
+                        modifier = Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(12.dp))
+                            .clickable(onClick = item.action)
+                            .padding(top = 4.dp, bottom = 3.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Image(
+                            painter = painterResource(item.iconId),
+                            contentDescription = item.label,
+                            modifier = Modifier.size(28.dp),
+                            alpha = if (item.selected) 1f else .69f,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = item.label,
+                            fontFamily = WebModernFont,
+                            fontSize = 10.5.sp,
+                            lineHeight = 13.sp,
+                            color = color,
+                            maxLines = 1,
+                        )
+                    }
+                }
             }
         }
     }

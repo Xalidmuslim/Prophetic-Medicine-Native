@@ -33,28 +33,28 @@ private val DarkScheme = darkColorScheme(
 )
 
 private val LightScheme = lightColorScheme(
-    primary = Color(0xFF315C45),
-    onPrimary = Color(0xFFFFFAF2),
-    primaryContainer = Color(0xFFE8EEE9),
-    onPrimaryContainer = Color(0xFF203D2E),
-    background = Color(0xFFF4EFE5),
-    onBackground = Color(0xFF101010),
-    surface = Color(0xFFFBF7EF),
-    onSurface = Color(0xFF101010),
-    surfaceVariant = Color(0xFFEAE3D7),
-    onSurfaceVariant = Color(0xFF050505),
-    outline = Color(0xFFD8CEBD),
-    outlineVariant = Color(0xFFD8CEBD),
-    secondary = Color(0xFFB99A62),
-    onSecondary = Color(0xFF101010),
+    primary = Color(0xFF2F6A52),
+    onPrimary = Color(0xFFFBF8F2),
+    primaryContainer = Color(0xFFE6EDE6),
+    onPrimaryContainer = Color(0xFF214B3D),
+    background = Color(0xFFF7F3EB),
+    onBackground = Color(0xFF1F1C19),
+    surface = Color(0xFFFBF8F2),
+    onSurface = Color(0xFF1F1C19),
+    surfaceVariant = Color(0xFFEFE9DE),
+    onSurfaceVariant = Color(0xFF6E6A63),
+    outline = Color(0xFFE7DED1),
+    outlineVariant = Color(0xFFE7DED1),
+    secondary = Color(0xFFC8A46A),
+    onSecondary = Color(0xFF1F1C19),
     error = Color(0xFF9B4940),
 )
 
 private val WebTypography = Typography(
-    displayLarge = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 40.sp, lineHeight = 44.sp),
-    displayMedium = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 38.sp),
-    displaySmall = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 29.sp, lineHeight = 33.sp),
-    headlineLarge = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 32.sp),
+    displayLarge = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 40.sp, lineHeight = 44.sp),
+    displayMedium = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 38.sp),
+    displaySmall = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 29.sp, lineHeight = 33.sp),
+    headlineLarge = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 32.sp),
     headlineMedium = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, lineHeight = 28.sp),
     headlineSmall = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 24.sp),
     titleLarge = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, lineHeight = 23.sp),
@@ -71,8 +71,8 @@ private val WebTypography = Typography(
 private val WebShapes = Shapes(
     extraSmall = RoundedCornerShape(8.dp),
     small = RoundedCornerShape(10.dp),
-    medium = RoundedCornerShape(13.dp),
-    large = RoundedCornerShape(18.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(19.dp),
     extraLarge = RoundedCornerShape(22.dp),
 )
 

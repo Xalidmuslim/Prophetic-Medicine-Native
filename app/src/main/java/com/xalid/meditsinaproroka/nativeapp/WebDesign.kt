@@ -104,7 +104,7 @@ fun WebHeader(
                             subtitle,
                             fontFamily = WebSansFont,
                             fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -200,7 +200,7 @@ private fun HeaderActionButton(
     Surface(
         onClick = onClick,
         modifier = Modifier.size(38.dp),
-        shape = RoundedCornerShape(15.dp),
+        shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shadowElevation = 2.dp,
@@ -274,7 +274,7 @@ fun WebHomeScreen(
             item {
                 Surface(
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(19.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                     shadowElevation = 1.dp,
                 ) {
@@ -363,7 +363,7 @@ fun WebHomeScreen(
                 Surface(
                     onClick = { navigate(Route.Search) },
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(13.dp),
+                    shape = RoundedCornerShape(18.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 ) {
                     Row(
@@ -398,7 +398,7 @@ fun WebHomeScreen(
                 Surface(
                     onClick = { navigate(Route.Treatments) },
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.38f),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(18.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
                 ) {
                     Row(
@@ -533,7 +533,7 @@ private fun WebQuickCard(
         onClick = onClick,
         modifier = modifier.heightIn(min = 104.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(13.dp),
+        shape = RoundedCornerShape(18.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(Modifier.padding(12.dp)) {
@@ -591,7 +591,7 @@ private fun WebCollectionCard(
         onClick = onClick,
         modifier = modifier.heightIn(min = 152.dp),
         color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(13.dp),
+        shape = RoundedCornerShape(18.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
     ) {
         Column(Modifier.padding(15.dp)) {
