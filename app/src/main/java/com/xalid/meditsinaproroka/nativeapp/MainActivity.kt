@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -57,6 +58,9 @@ class MainActivity : ComponentActivity() {
         val launchTheme = if (
             getSharedPreferences("alfatiha_native", MODE_PRIVATE).getBoolean("dark", false)
         ) "dark" else "light"
+        // The system splash may restore bright status-bar icons. Set the
+        // initial contrast before Compose, then reapply after splash dismissal.
+        applySystemBars(launchTheme)
 
         MedicineRuntimeWarmup.preload(appContext)
 
@@ -100,6 +104,10 @@ class MainActivity : ComponentActivity() {
                     // before releasing Android's splash on the next pre-draw.
                     withFrameNanos { }
                     initialScreenReady = true
+                    // The splash exit can override WindowInsetsController flags.
+                    // Apply the active reader theme again on the first visible frame.
+                    withFrameNanos { }
+                    applySystemBars(state.store.settings.theme)
                 }
             }
             MedicinaTheme(state?.store?.settings?.theme ?: launchTheme) {
@@ -120,6 +128,16 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         MedicineRuntimeWarmup.peekStore()?.syncSharedTheme()
+    }
+
+    private fun applySystemBars(mode: String) {
+        val dark = mode == "dark" ||
+            (mode != "light" && (resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                android.content.res.Configuration.UI_MODE_NIGHT_YES)
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.isAppearanceLightStatusBars = !dark
+        controller.isAppearanceLightNavigationBars = !dark
     }
 
     private fun configureActivityTransitions() {
