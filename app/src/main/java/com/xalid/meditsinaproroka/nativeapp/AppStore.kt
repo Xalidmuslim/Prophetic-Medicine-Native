@@ -17,6 +17,7 @@ class AppStore(context: Context) {
 
     fun bookmarks(): Set<String> = loadSet("bookmarks")
     fun history(): List<String> = loadList("history")
+    fun readChapters(): Set<String> = loadSet("readChapters")
     fun toggleBookmark(id: String): Set<String> {
         val next = bookmarks().toMutableSet()
         if (!next.add(id)) next.remove(id)
@@ -25,6 +26,8 @@ class AppStore(context: Context) {
     }
     fun rememberChapter(id: String) {
         lastChapterId = id
+        val visited = readChapters().toMutableSet().apply { add(id) }
+        preferences.edit().putString("readChapters", JSONArray(visited.toList()).toString()).apply()
         val next = history().toMutableList().apply { remove(id); add(0, id) }.take(100)
         preferences.edit().putString("history", JSONArray(next).toString()).apply()
     }

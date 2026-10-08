@@ -11,7 +11,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,6 +46,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -149,7 +155,7 @@ fun MedicineApp() {
                     label = "nativeScreenTransition"
                 ) { current ->
                     when (current) {
-                        Route.Home -> HomeScreen(book, store.lastChapterId, navigate, selectBook, importing, importStatus)
+                        Route.Home -> HomeScreen(book, store.lastChapterId, store.readChapters().size, navigate, selectBook, importing, importStatus)
                         Route.Book -> ChapterListScreen(book, navigate)
                         Route.Topics -> TopicScreen(book, navigate)
                         Route.Remedies -> RemediesScreen(book, navigate)
@@ -199,10 +205,12 @@ private fun AppHeader(subtitle: String, canBack: Boolean, onBack: () -> Unit, on
         if (canBack) {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Назад") }
         } else {
-            Box(
-                Modifier.size(48.dp).background(Green, RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) { Icon(Icons.Default.Book, contentDescription = null, tint = Color.White) }
+            Image(
+                painter = painterResource(R.drawable.medicine_launcher),
+                contentDescription = "Медицина Пророка",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+            )
         }
         Column(modifier = Modifier.weight(1f)) {
             Text("Медицина Пророка ﷺ", fontSize = 19.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -240,14 +248,22 @@ private fun Screen(title: String, content: LazyListScope.() -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 22.dp, bottom = 30.dp)
     ) {
-        item { Text(title, fontSize = 27.sp, fontWeight = FontWeight.SemiBold, lineHeight = 34.sp) }
+        item {
+            Text(
+                title,
+                fontSize = if (title.startsWith("Книга, разбитая")) 29.sp else 27.sp,
+                fontFamily = if (title.startsWith("Книга, разбитая")) FontFamily.Serif else FontFamily.Default,
+                fontWeight = FontWeight.Bold,
+                lineHeight = if (title.startsWith("Книга, разбитая")) 36.sp else 34.sp
+            )
+        }
         content()
     }
 }
 
 @Composable
 private fun HomeScreen(
-    book: BookData, lastChapterId: String?, navigate: (Route) -> Unit,
+    book: BookData, lastChapterId: String?, readCount: Int, navigate: (Route) -> Unit,
     onImport: () -> Unit, importBusy: Boolean, importStatus: String?
 ) {
     Screen("Книга, разбитая на главы, темы и средства") {
@@ -262,12 +278,45 @@ private fun HomeScreen(
         }
         if (importStatus != null) item { Text(importStatus, style = MaterialTheme.typography.bodyMedium) }
         item {
-            FeatureCard(
-                title = "Продолжить чтение",
-                subtitle = book.chapter(lastChapterId.orEmpty())?.title ?: "Начать с первой главы",
-                icon = Icons.Default.Book,
-                enabled = book.hasFullText && book.chapters.isNotEmpty()
-            ) { navigate(Route.Reader(lastChapterId ?: book.chapters.first().id)) }
+            val percent = if (book.chapters.isNotEmpty()) {
+                (100f * readCount / book.chapters.size).toInt().coerceIn(0, 100)
+            } else 0
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                border = BorderStroke(1.dp, Border),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Book, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(12.dp))
+                        Text("Продолжить чтение", modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
+                        Text("$percent%", color = MaterialTheme.colorScheme.primary)
+                    }
+                    Text(
+                        book.chapter(lastChapterId.orEmpty())?.title
+                            ?: book.chapters.firstOrNull()?.title ?: "Первая глава",
+                        fontSize = 18.sp, fontWeight = FontWeight.Medium, lineHeight = 24.sp,
+                        maxLines = 3, overflow = TextOverflow.Ellipsis
+                    )
+                    LinearProgressIndicator(
+                        progress = { percent / 100f },
+                        modifier = Modifier.fillMaxWidth().height(4.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    Button(
+                        onClick = { if (book.chapters.isNotEmpty()) navigate(Route.Reader(lastChapterId ?: book.chapters.first().id)) },
+                        enabled = book.hasFullText && book.chapters.isNotEmpty(),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Продолжить →")
+                    }
+                }
+            }
         }
         item { FeatureCard("Поиск по всей книге", "По названиям и содержанию", Icons.Default.Search, onClick = { navigate(Route.Search) }) }
         item { FeatureCard("Как лечили / что применялось", "Состояние → средства → полный текст", Icons.Default.Healing, onClick = { navigate(Route.Treatments) }) }
@@ -317,7 +366,8 @@ private fun FeatureCard(title: String, subtitle: String, icon: androidx.compose.
         enabled = enabled,
         shape = RoundedCornerShape(17.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.dp, if (MaterialTheme.colorScheme.background == Beige) Border else MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(Modifier.fillMaxWidth().padding(17.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
@@ -332,6 +382,7 @@ private fun SimpleRow(title: String, subtitle: String = "", onClick: () -> Unit)
     Card(
         onClick = onClick, modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(15.dp),
+        border = BorderStroke(1.dp, if (MaterialTheme.colorScheme.background == Beige) Border else MaterialTheme.colorScheme.surfaceVariant),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Row(Modifier.fillMaxWidth().padding(17.dp), verticalAlignment = Alignment.CenterVertically) {
