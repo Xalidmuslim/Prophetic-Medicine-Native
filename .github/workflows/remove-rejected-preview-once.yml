@@ -1,0 +1,46 @@
+name: Remove rejected Medicine preview once
+
+on:
+  push:
+    branches: ['codex/medicine-copy-module-20261008']
+    paths: ['.github/workflows/remove-rejected-preview-once.yml']
+
+permissions:
+  contents: write
+  actions: write
+  pull-requests: read
+
+jobs:
+  clean-abandoned-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm rejected pull request was closed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATE="$(gh api repos/${{ github.repository }}/pulls/2 --jq '.state')"
+          if [ "$STATE" != closed ]; then
+            echo "Refusing cleanup until rejected preview PR #2 is closed: $STATE"
+            exit 1
+          fi
+      - name: Remove downloadable rejected-preview APK artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/${{ github.repository }}/actions/artifacts?per_page=100" --jq '.artifacts[] | select(.name=="Prophetic-Medicine-Native-PREVIEW-APK") | .id' | while read -r artifact; do
+            echo "Delete abandoned preview artifact #$artifact"
+            gh api --method DELETE "repos/${{ github.repository }}/actions/artifacts/$artifact"
+          done
+      - name: Delete rejected preview branch only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET='codex/medicine-native-preview-20261008'
+          echo "Removing rejected branch $TARGET"
+          gh api --method DELETE "repos/${{ github.repository }}/git/refs/heads/$TARGET"
