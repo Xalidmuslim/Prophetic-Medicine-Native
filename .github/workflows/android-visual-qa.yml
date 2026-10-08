@@ -1,0 +1,75 @@
+name: Medicine visual smoke QA (native emulator)
+on:
+  push:
+    branches: ['codex/medicine-premium-redesign-20261008']
+    paths: ['.github/workflows/android-visual-qa.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-emulator-screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Build complete native APK and verify protected book
+        run: |
+          set -euo pipefail
+          test "$(git hash-object app/src/main/assets/book.json)" = b7f9447d88791cec4eb29aefdbe270fb1f972bcd
+          test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt)" = 62a8db97fa5c252c1cef23f69ed3ca725eb7faa1
+          test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Store.kt)" = 1a0e9a916039823582cbdb6a961629f1919f3b3d
+          gradle :app:assembleDebug --no-daemon
+      - name: Emulator startup and screenshots (Pixel 6 / API 35)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: false
+          script: |
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            set -euo pipefail
+            mkdir -p screenshots
+            adb shell wm size
+            adb shell am start -n com.xalid.meditsinaproroka.nativeapp.modulecopy.smooth/com.xalid.meditsinaproroka.nativeapp.MainActivity
+            sleep 6
+            adb shell screencap -p /sdcard/home.png
+            adb pull /sdcard/home.png screenshots/home.png
+            SIZE=$(adb shell wm size | tr -d '\r' | grep 'Physical size' | sed -E 's/.*: ([0-9]+)x([0-9]+)/\1 \2/')
+            read -r W H <<< "$SIZE"
+            # Relative screen coordinates, independent of emulator resolution.
+            NAV_Y=$((H-135))
+            adb shell input tap $((W*9/10)) "$NAV_Y"
+            sleep 2
+            adb shell screencap -p /sdcard/more.png
+            adb pull /sdcard/more.png screenshots/more.png
+            adb shell input tap $((W/10)) "$NAV_Y"
+            sleep 2
+            adb shell screencap -p /sdcard/back_home.png
+            adb pull /sdcard/back_home.png screenshots/back_home.png
+            file screenshots/*.png
+      - name: Upload screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Medicine-Native-Visual-QA
+          path: screenshots/
+          if-no-files-found: warn
+          retention-days: 7
