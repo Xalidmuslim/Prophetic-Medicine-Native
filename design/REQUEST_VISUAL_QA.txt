@@ -1,2 +1,9 @@
-UI visual verification requested 2026-10-08: full uncropped hero photograph, architectural background, Fit reading art, cream/sage panel. Compare against owner reference screenshots; preserve book and native functionality.
-Recheck 2026-10-08: feathered arch removes rectangular edge; fully visible photograph scaled right of copy; retain exact source images and content.
+Visual QA request: final generated image resources / 2026-10-08.
+On Pixel 6 Android API 35 verify:
+- all 15 topic cards have the identical warm ivory mortar-and-herbs icon;
+- topic labels remain readable and no illustration clips outside a card;
+- Continue Reading has a complete healing-material photo, no Quran or open book;
+- "Как лечили / что применялось" displays the newly generated herbal arrangement with no hard crop;
+- all card backgrounds are warm ivory with beige outlines;
+- bottom navigation and reading actions still work.
+No text, notes, bookmarks, or navigation business logic may be changed.
