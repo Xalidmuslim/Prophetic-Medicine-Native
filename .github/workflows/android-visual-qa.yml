@@ -7,6 +7,8 @@ on:
       - 'scripts/medicine_visual_qa.sh'
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Theme.kt'
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/PremiumHome.kt'
+      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/ReferenceHome.kt'
+      - 'app/src/main/res/drawable-nodpi/medicine_photo_*.webp'
   workflow_dispatch:
 
 permissions:
