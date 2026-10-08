@@ -3,6 +3,7 @@ set -euo pipefail
 mkdir -p screenshots
 PACKAGE=com.xalid.meditsinaproroka.nativeapp.premiumreview
 ACTIVITY=com.xalid.meditsinaproroka.nativeapp.MainActivity
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell am start -n "$PACKAGE/$ACTIVITY"
 sleep 6
 adb shell pidof "$PACKAGE"

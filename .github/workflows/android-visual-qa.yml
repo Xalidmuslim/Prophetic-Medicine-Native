@@ -2,7 +2,7 @@ name: Medicine visual smoke QA (native emulator)
 on:
   push:
     branches: ['codex/medicine-premium-redesign-20261008']
-    paths: ['.github/workflows/android-visual-qa.yml']
+    paths: ['.github/workflows/android-visual-qa.yml', 'scripts/medicine_visual_qa.sh']
   workflow_dispatch:
 
 permissions:
