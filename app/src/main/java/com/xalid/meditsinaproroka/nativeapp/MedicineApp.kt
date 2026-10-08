@@ -1,6 +1,11 @@
 package com.xalid.meditsinaproroka.nativeapp
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -70,7 +75,32 @@ private sealed interface Route {
 fun MedicineApp() {
     val context = LocalContext.current
     val store = remember { AppStore(context) }
-    val book = remember { BookData.load(context) }
+    var book by remember { mutableStateOf(BookData.load(context)) }
+    var importing by remember { mutableStateOf(false) }
+    var importStatus by remember { mutableStateOf<String?>(null) }
+    val importScope = rememberCoroutineScope()
+    val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            importing = true
+            importStatus = null
+            importScope.launch {
+                try {
+                    val loaded = withContext(Dispatchers.IO) {
+                        BookRepository.importBook(context, uri)
+                    }
+                    book = loaded
+                    importStatus = "Книга успешно импортирована: ${loaded.chapters.size} глав. Доступна без интернета."
+                } catch (error: Exception) {
+                    importStatus = "Не удалось импортировать книгу: ${error.message ?: "неизвестная ошибка"}"
+                } finally {
+                    importing = false
+                }
+            }
+        }
+    }
+    val selectBook: () -> Unit = {
+        if (!importing) filePicker.launch(arrayOf("application/json", "application/octet-stream", "text/plain"))
+    }
     var dark by remember { mutableStateOf(store.darkMode) }
     var fontSize by remember { mutableFloatStateOf(store.fontSize) }
     var bookmarks by remember { mutableStateOf(store.bookmarks()) }
@@ -119,7 +149,7 @@ fun MedicineApp() {
                     label = "nativeScreenTransition"
                 ) { current ->
                     when (current) {
-                        Route.Home -> HomeScreen(book, store.lastChapterId, navigate)
+                        Route.Home -> HomeScreen(book, store.lastChapterId, navigate, selectBook, importing, importStatus)
                         Route.Book -> ChapterListScreen(book, navigate)
                         Route.Topics -> TopicScreen(book, navigate)
                         Route.Remedies -> RemediesScreen(book, navigate)
@@ -128,7 +158,8 @@ fun MedicineApp() {
                         Route.Bookmarks -> BookmarksScreen(book, bookmarks, navigate)
                         Route.History -> HistoryScreen(book, store.history(), navigate)
                         Route.More -> MoreScreen(navigate)
-                        Route.Settings -> SettingsScreen(dark, fontSize, onDark = {
+                        Route.Settings -> SettingsScreen(dark, fontSize, onImport = selectBook,
+                            importBusy = importing, importStatus = importStatus, hasFullText = book.hasFullText, onDark = {
                             dark = it; store.darkMode = it
                         }, onSize = {
                             fontSize = it; store.fontSize = it
@@ -215,10 +246,21 @@ private fun Screen(title: String, content: LazyListScope.() -> Unit) {
 }
 
 @Composable
-private fun HomeScreen(book: BookData, lastChapterId: String?, navigate: (Route) -> Unit) {
+private fun HomeScreen(
+    book: BookData, lastChapterId: String?, navigate: (Route) -> Unit,
+    onImport: () -> Unit, importBusy: Boolean, importStatus: String?
+) {
     Screen("Книга, разбитая на главы, темы и средства") {
         item { Text("Полный русский текст с поиском, закладками, источниками и офлайн-доступом.", style = MaterialTheme.typography.bodyMedium) }
-        if (!book.hasFullText) item { BookUnavailable() }
+        if (!book.hasFullText) item {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                BookUnavailable()
+                Button(onClick = onImport, enabled = !importBusy, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (importBusy) "Проверка и загрузка…" else "Импортировать книгу из файла JSON")
+                }
+            }
+        }
+        if (importStatus != null) item { Text(importStatus, style = MaterialTheme.typography.bodyMedium) }
         item {
             FeatureCard(
                 title = "Продолжить чтение",
@@ -467,7 +509,11 @@ private fun MoreScreen(navigate: (Route) -> Unit) {
 }
 
 @Composable
-private fun SettingsScreen(darkMode: Boolean, fontSize: Float, onDark: (Boolean) -> Unit, onSize: (Float) -> Unit) {
+private fun SettingsScreen(
+    darkMode: Boolean, fontSize: Float, onImport: () -> Unit,
+    importBusy: Boolean, importStatus: String?, hasFullText: Boolean,
+    onDark: (Boolean) -> Unit, onSize: (Float) -> Unit
+) {
     Screen("Настройки чтения") {
         item {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
@@ -482,6 +528,27 @@ private fun SettingsScreen(darkMode: Boolean, fontSize: Float, onDark: (Boolean)
                     Text("Размер текста: ${fontSize.toInt()}", style = MaterialTheme.typography.bodyLarge)
                     Slider(value = fontSize, onValueChange = onSize, valueRange = 14f..32f)
                     Text("Пример текста книги", fontSize = fontSize.sp, lineHeight = (fontSize * 1.48f).sp)
+                }
+            }
+        }
+        item {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Офлайн-книга", fontWeight = FontWeight.SemiBold)
+                    Text(
+                        if (hasFullText) "Полный текст доступен офлайн."
+                        else "Полный текст не встроен в публичную тестовую сборку. Выберите файл book.json, извлечённый из вашей версии 1.0.0.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    OutlinedButton(
+                        onClick = onImport, enabled = !importBusy,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (importBusy) "Импорт выполняется…" else "Выбрать файл книги")
+                    }
+                    if (importStatus != null) {
+                        Text(importStatus, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         }
