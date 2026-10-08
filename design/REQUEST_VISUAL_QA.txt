@@ -1,1 +1,2 @@
 UI visual verification requested 2026-10-08: full uncropped hero photograph, architectural background, Fit reading art, cream/sage panel. Compare against owner reference screenshots; preserve book and native functionality.
+Recheck 2026-10-08: feathered arch removes rectangular edge; fully visible photograph scaled right of copy; retain exact source images and content.
