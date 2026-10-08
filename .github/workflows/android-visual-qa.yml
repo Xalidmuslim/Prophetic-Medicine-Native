@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git hash-object app/src/main/assets/book.json)" = b7f9447d88791cec4eb29aefdbe270fb1f972bcd
-          test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt)" = 68e38ba42559dd8035ccd5d89cbdc8b1547e26cd
+          test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt)" = eb88767a949f051d3e33b2b05a21ef29d14b5913
           test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Store.kt)" = 1a0e9a916039823582cbdb6a961629f1919f3b3d
           gradle :app:assembleDebug --no-daemon
       - name: Emulator startup and screenshots (Pixel 6 / API 35)
