@@ -76,50 +76,62 @@ fun WebHeader(
     Surface(color = MaterialTheme.colorScheme.background, tonalElevation = 0.dp) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 62.dp).padding(horizontal = 8.dp, vertical = 5.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .heightIn(min = 66.dp)
+                    .padding(horizontal = 11.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(42.dp), contentAlignment = Alignment.Center) {
                     if (back != null) {
-                        IconButton(onClick = back) {
-                            Text("←", fontFamily = WebSansFont, fontSize = 24.sp)
+                        Surface(
+                            onClick = back,
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(13.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        ) {
+                            Box(Modifier.size(39.dp), contentAlignment = Alignment.Center) {
+                                Text("‹", fontFamily = WebSansFont, fontSize = 29.sp, lineHeight = 30.sp)
+                            }
                         }
                     }
                 }
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f).padding(horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         title,
-                        fontFamily = WebModernFont,
+                        fontFamily = WebLiterataFont,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.5.sp,
-                        lineHeight = 22.sp,
-                        maxLines = 1,
+                        fontSize = 18.sp,
+                        lineHeight = 23.sp,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
                     )
                     if (!subtitle.isNullOrBlank()) {
+                        Spacer(Modifier.height(2.dp))
                         Text(
                             subtitle,
-                            fontFamily = WebSansFont,
+                            fontFamily = WebModernFont,
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Medium,
+                            fontWeight = FontWeight.Normal,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
+                            textAlign = TextAlign.Center,
                         )
                     }
                 }
-                Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(42.dp), contentAlignment = Alignment.Center) {
                     if (settings != null) {
                         IconButton(onClick = settings) {
-                            Text("⚙", fontSize = 22.sp)
+                            Icon(Icons.Default.Settings, "Настройки", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
                 }
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.74f), thickness = 0.7.dp)
         }
     }
 }
