@@ -144,7 +144,7 @@ fun MedicinaApp(book: BookData, store: AppStore) {
         ) { route ->
             screenStateHolder.SaveableStateProvider(routeStateKey(route)) {
                 when (route) {
-                Route.Home -> PremiumHomeScreen(
+                Route.Home -> ReferenceHomeScreen(
                     book = book,
                     store = store,
                     modifier = modifier,
