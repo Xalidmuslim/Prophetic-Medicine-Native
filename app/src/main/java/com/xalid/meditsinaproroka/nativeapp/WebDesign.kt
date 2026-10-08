@@ -666,8 +666,8 @@ fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
     Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         WebHeader("Ещё", settings = { navigate(Route.Settings) })
         androidx.compose.foundation.lazy.LazyColumn(
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             items(rows.size) { index ->
                 val row = rows[index]
@@ -678,17 +678,17 @@ fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 ) {
                     Row(
-                        Modifier.fillMaxWidth().heightIn(min = 74.dp)
-                            .padding(horizontal = 13.dp, vertical = 9.dp),
+                        Modifier.fillMaxWidth().heightIn(min = 66.dp)
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Image(
                             painter = painterResource(row.iconId),
                             contentDescription = null,
-                            modifier = Modifier.size(45.dp),
+                            modifier = Modifier.size(42.dp),
                             contentScale = ContentScale.Fit,
                         )
-                        Spacer(Modifier.width(12.dp))
+                        Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
                                 row.title, fontFamily = WebModernFont,
