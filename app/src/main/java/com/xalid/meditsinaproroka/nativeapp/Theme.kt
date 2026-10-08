@@ -20,37 +20,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private val DarkScheme = darkColorScheme(
-    primary = Color(0xFF86AB94),
+    primary = Color(0xFFB2B7AD),
     onPrimary = Color(0xFF152019),
-    primaryContainer = Color(0xFF29362E),
+    primaryContainer = Color(0xFF323632),
     onPrimaryContainer = Color(0xFFEDE7DC),
     background = Color(0xFF191D1A),
     onBackground = Color(0xFFEDE7DC),
     surface = Color(0xFF202622),
     onSurface = Color(0xFFEDE7DC),
-    surfaceVariant = Color(0xFF292F2A),
+    surfaceVariant = Color(0xFF2D302E),
     onSurfaceVariant = Color(0xFFF3F3F3),
-    outline = Color(0xFF343B35),
-    outlineVariant = Color(0xFF343B35),
+    outline = Color(0xFF43453F),
+    outlineVariant = Color(0xFF43453F),
     secondary = Color(0xFFBDA276),
     onSecondary = Color(0xFF191D1A),
     error = Color(0xFFD08377),
 )
 
 private val LightScheme = lightColorScheme(
-    primary = Color(0xFF2F6A52),
+    primary = Color(0xFF48574C),
     onPrimary = Color(0xFFFBF8F2),
-    primaryContainer = Color(0xFFE6EDE6),
-    onPrimaryContainer = Color(0xFF214B3D),
-    background = Color(0xFFF6F1E8),
+    primaryContainer = Color(0xFFEAEAE3),
+    onPrimaryContainer = Color(0xFF3F4941),
+    background = Color(0xFFF8F5F0),
     onBackground = Color(0xFF1F1C19),
-    surface = Color(0xFFFCF9F3),
+    surface = Color(0xFFFCFAF6),
     onSurface = Color(0xFF1F1C19),
-    surfaceVariant = Color(0xFFF2EAE0),
+    surfaceVariant = Color(0xFFF2EFE9),
     onSurfaceVariant = Color(0xFF6E6A63),
-    outline = Color(0xFFE3D7C7),
-    outlineVariant = Color(0xFFE3D7C7),
-    secondary = Color(0xFFC8A46A),
+    outline = Color(0xFFE3DED5),
+    outlineVariant = Color(0xFFE3DED5),
+    secondary = Color(0xFFAA977B),
     onSecondary = Color(0xFF1F1C19),
     error = Color(0xFF9B4940),
 )
@@ -98,7 +98,7 @@ fun MedicinaTheme(mode: String, content: @Composable () -> Unit) {
             controls.isAppearanceLightNavigationBars = !dark
             @Suppress("DEPRECATION")
             host.window.statusBarColor = if (dark) AndroidColor.rgb(25, 29, 26)
-                else AndroidColor.rgb(247, 243, 235)
+                else AndroidColor.rgb(248, 245, 240)
         }
     }
     MaterialTheme(
