@@ -83,8 +83,19 @@ fun ReferenceHomeScreen(
     val ink = MaterialTheme.colorScheme.onSurface
     val secondary = MaterialTheme.colorScheme.onSurfaceVariant
     Column(modifier.fillMaxSize().background(bg)) {
+        // Reference architecture continues through the title area instead of
+        // disappearing behind a plain ivory app bar.
+        Box(Modifier.fillMaxWidth().height(80.dp)) {
+            Image(
+                painter = painterResource(R.drawable.medicine_photo_arch),
+                contentDescription = null,
+                modifier = Modifier.align(Alignment.CenterEnd).width(202.dp).height(80.dp),
+                contentScale = ContentScale.Fit,
+                alpha = .65f,
+            )
         Row(
-            Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 5.dp),
+            Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 5.dp)
+                .align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
@@ -123,6 +134,7 @@ fun ReferenceHomeScreen(
                 }
             }
         }
+        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 13.dp, end = 13.dp, top = 1.dp, bottom = 16.dp),
@@ -130,15 +142,16 @@ fun ReferenceHomeScreen(
         ) {
             item(key = "ref-hero") {
                 BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth().height(227.dp),
+                    modifier = Modifier.fillMaxWidth().height(228.dp),
                 ) {
                     val compact = maxWidth < 345.dp
                     Image(
                         painter = painterResource(R.drawable.medicine_photo_hero),
                         contentDescription = null,
                         modifier = Modifier.align(Alignment.BottomEnd)
-                            .width(maxWidth * .80f).height(215.dp),
-                        contentScale = ContentScale.Crop,
+                            .width(maxWidth * .86f).height(211.dp),
+                        // Never crop the bowl, pestle, oil bottle or leaves.
+                        contentScale = ContentScale.Fit,
                     )
                     // Photographic crop stays visible at right, while the ivory
                     // overlay guarantees contrast behind the Russian heading.
@@ -146,9 +159,10 @@ fun ReferenceHomeScreen(
                         Modifier.fillMaxSize().background(
                             Brush.horizontalGradient(
                                 0f to bg,
-                                .24f to bg,
-                                .43f to bg.copy(alpha = .87f),
-                                .63f to bg.copy(alpha = .13f),
+                                .20f to bg,
+                                .38f to bg.copy(alpha = .90f),
+                                .57f to bg.copy(alpha = .16f),
+                                .86f to Color.Transparent,
                                 1f to Color.Transparent,
                             )
                         )
@@ -190,14 +204,20 @@ fun ReferenceHomeScreen(
                     shadowElevation = 2.dp,
                 ) {
                     Row(
-                        Modifier.fillMaxWidth().heightIn(min = 168.dp)
-                            .padding(start = 6.dp, end = 11.dp, top = 8.dp, bottom = 8.dp),
+                        Modifier.fillMaxWidth()
+                            .background(Brush.horizontalGradient(
+                                0f to Color(0xFFE9E9DE),
+                                .46f to surface,
+                                1f to surface,
+                            ))
+                            .heightIn(min = 168.dp)
+                            .padding(start = 7.dp, end = 11.dp, top = 8.dp, bottom = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Image(
                             painterResource(R.drawable.medicine_photo_reading), null,
-                            modifier = Modifier.width(122.dp).height(154.dp),
-                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.width(111.dp).height(142.dp),
+                            contentScale = ContentScale.Fit,
                         )
                         Spacer(Modifier.width(5.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
@@ -283,12 +303,18 @@ fun ReferenceHomeScreen(
                 Surface(
                     onClick = { navigate(Route.Treatments) },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 75.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = .7f),
+                    color = surface,
                     shape = RoundedCornerShape(18.dp),
                     border = BorderStroke(1.dp, outline),
                     shadowElevation = 1.dp,
                 ) {
-                    Row(Modifier.fillMaxWidth().padding(start=2.dp,end=12.dp,top=4.dp,bottom=4.dp),
+                    Row(Modifier.fillMaxWidth()
+                        .background(Brush.horizontalGradient(
+                            0f to Color(0xFFDDE6DB),
+                            .48f to Color(0xFFEAECE0),
+                            1f to Color(0xFFE0E7DD),
+                        ))
+                        .padding(start=2.dp,end=12.dp,top=4.dp,bottom=4.dp),
                         verticalAlignment=Alignment.CenterVertically) {
                         Image(
                             painterResource(R.drawable.medicine_photo_treatments), null,
