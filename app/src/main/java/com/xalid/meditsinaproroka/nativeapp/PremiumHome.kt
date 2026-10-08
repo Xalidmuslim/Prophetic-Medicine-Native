@@ -206,12 +206,19 @@ fun PremiumHomeScreen(
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
-                        LinearProgressIndicator(
-                            progress = { animatedProgress },
-                            modifier = Modifier.fillMaxWidth().height(5.dp).clip(CircleShape),
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.primaryContainer,
-                        )
+                        // Custom track avoids Material3's trailing stop-dot at 0%.
+                        Box(
+                            Modifier.fillMaxWidth().height(5.dp).clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                        ) {
+                            if (animatedProgress > 0f) {
+                                Box(
+                                    Modifier.fillMaxHeight().fillMaxWidth(animatedProgress)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                        }
                         Button(
                             onClick = onContinue,
                             modifier = Modifier.fillMaxWidth().height(49.dp),
