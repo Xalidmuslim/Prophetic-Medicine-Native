@@ -7,7 +7,12 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import android.app.Activity
+import android.graphics.Color as AndroidColor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -82,6 +87,19 @@ fun MedicinaTheme(mode: String, content: @Composable () -> Unit) {
         "dark" -> true
         "light" -> false
         else -> isSystemInDarkTheme()
+    }
+    val activity = LocalContext.current as? Activity
+    SideEffect {
+        activity?.let { host ->
+            // System icons must contrast with the actual Compose theme, including
+            // after toggling dark mode from the reader settings.
+            val controls = WindowCompat.getInsetsController(host.window, host.window.decorView)
+            controls.isAppearanceLightStatusBars = !dark
+            controls.isAppearanceLightNavigationBars = !dark
+            @Suppress("DEPRECATION")
+            host.window.statusBarColor = if (dark) AndroidColor.rgb(25, 29, 26)
+                else AndroidColor.rgb(247, 243, 235)
+        }
     }
     MaterialTheme(
         colorScheme = if (dark) DarkScheme else LightScheme,

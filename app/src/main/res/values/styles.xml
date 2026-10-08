@@ -2,9 +2,9 @@
 <resources>
     <style name="Theme.MedicinaProrokaNative" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowBackground">#F7F3EB</item>
-        <item name="android:statusBarColor">#2F6A52</item>
+        <item name="android:statusBarColor">#F7F3EB</item>
         <item name="android:navigationBarColor">#F7F3EB</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">sans</item>
     </style>
     <style name="Theme.MedicinaSplash" parent="Theme.SplashScreen">
