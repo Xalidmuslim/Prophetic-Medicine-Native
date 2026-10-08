@@ -1,0 +1,7 @@
+.header{position:sticky;top:0;z-index:50;border-bottom:1px solid color-mix(in srgb,var(--border) 80%,transparent);background:color-mix(in srgb,var(--background) 94%,transparent);backdrop-filter:blur(12px);padding-top:env(safe-area-inset-top,0px)}
+.inner{max-width:46rem;margin:0 auto;min-height:58px;padding:.45rem .75rem;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:.4rem;align-items:center}
+.spacer{width:44px;height:44px}
+.titles{min-width:0;text-align:center}
+.titles h1{margin:0;font-family:var(--font-family-display);font-size:1.16rem;line-height:1.15;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.titles p{margin:.12rem 0 0;color:var(--muted-foreground);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.actions{display:flex;align-items:center;justify-content:flex-end}
