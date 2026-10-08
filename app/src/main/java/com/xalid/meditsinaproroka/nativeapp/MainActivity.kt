@@ -65,7 +65,9 @@ class MainActivity : ComponentActivity() {
         // Compose's first visible frame may precede the platform's exit callback.
         splash.setOnExitAnimationListener { splashView ->
             splashView.remove()
-            applySystemBars(launchTheme)
+            // Wait until the platform finishes its splash window transition.
+            // Otherwise Android 12+ can restore white icons on the first frame.
+            window.decorView.postOnAnimation { applySystemBars(launchTheme) }
         }
 
         MedicineRuntimeWarmup.preload(appContext)
