@@ -10,6 +10,7 @@ on:
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/ReferenceHome.kt'
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Screens.kt'
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/MainActivity.kt'
+      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt'
       - 'app/src/main/res/drawable-nodpi/medicine_photo_*.webp'
   workflow_dispatch:
 
@@ -40,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git hash-object app/src/main/assets/book.json)" = b7f9447d88791cec4eb29aefdbe270fb1f972bcd
-          test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt)" = 62a8db97fa5c252c1cef23f69ed3ca725eb7faa1
+          test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt)" = ea32f7efcdebaf563b2284f6ce10d4420006e464
           test "$(git hash-object app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Store.kt)" = 1a0e9a916039823582cbdb6a961629f1919f3b3d
           gradle :app:assembleDebug --no-daemon
       - name: Emulator startup and screenshots (Pixel 6 / API 35)
