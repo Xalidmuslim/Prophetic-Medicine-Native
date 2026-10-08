@@ -91,7 +91,7 @@ fun ReferenceHomeScreen(
                 contentDescription = null,
                 modifier = Modifier.align(Alignment.CenterEnd).width(202.dp).height(80.dp),
                 contentScale = ContentScale.Fit,
-                alpha = .65f,
+                alpha = .48f,
             )
         Row(
             Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 5.dp)
@@ -142,14 +142,14 @@ fun ReferenceHomeScreen(
         ) {
             item(key = "ref-hero") {
                 BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth().height(228.dp),
+                    modifier = Modifier.fillMaxWidth().height(191.dp),
                 ) {
                     val compact = maxWidth < 345.dp
                     Image(
                         painter = painterResource(R.drawable.medicine_photo_hero),
                         contentDescription = null,
                         modifier = Modifier.align(Alignment.BottomEnd)
-                            .width(maxWidth * .86f).height(211.dp),
+                            .width(maxWidth * .65f).height(182.dp),
                         // Never crop the bowl, pestle, oil bottle or leaves.
                         contentScale = ContentScale.Fit,
                     )
@@ -159,10 +159,10 @@ fun ReferenceHomeScreen(
                         Modifier.fillMaxSize().background(
                             Brush.horizontalGradient(
                                 0f to bg,
-                                .20f to bg,
-                                .38f to bg.copy(alpha = .90f),
-                                .57f to bg.copy(alpha = .16f),
-                                .86f to Color.Transparent,
+                                .27f to bg,
+                                .48f to bg.copy(alpha = .95f),
+                                .65f to bg.copy(alpha = .22f),
+                                .89f to Color.Transparent,
                                 1f to Color.Transparent,
                             )
                         )
@@ -180,7 +180,7 @@ fun ReferenceHomeScreen(
                             fontSize = if (compact) 21.sp else 24.sp,
                             lineHeight = if (compact) 26.sp else 30.sp,
                         )
-                        Spacer(Modifier.height(13.dp))
+                        Spacer(Modifier.height(9.dp))
                         Text(
                             "Полный русский текст с поиском, заметками, источниками и офлайн-доступом.",
                             color = secondary,
