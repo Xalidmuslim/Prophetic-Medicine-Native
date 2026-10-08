@@ -207,7 +207,7 @@ fun ReaderScreen(
                         start = 16.dp,
                         end = 16.dp,
                         top = 8.dp,
-                        bottom = 104.dp,
+                        bottom = 16.dp,
                     ),
             ) {
                 Text(
@@ -401,13 +401,11 @@ fun ReaderScreen(
                     }
                 }
             }
-        }
 
         // Native reader controls live in a dedicated toolbar. Unlike the old
-        // floating 'Aa' button, this does not cover the Next action or text.
+        // floating 'Aa' button, this occupies its own layout space.
         Surface(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
+            modifier = Modifier.fillMaxWidth()
                 .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
             color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(18.dp),
@@ -455,6 +453,7 @@ fun ReaderScreen(
                     Icon(Icons.Default.ChevronRight, contentDescription = "Следующая глава")
                 }
             }
+        }
         }
     }
 
