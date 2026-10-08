@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,10 +33,10 @@ import androidx.compose.ui.unit.sp
  * and are never fetched from the network at runtime.
  * The original book, all Route handlers, AppStore, Reader and search remain intact.
  */
-private val RefDeep = Color(0xFF214B3D)
-private val RefIvory = Color(0xFFF7F3EB)
-private val RefGold = Color(0xFFC8A46A)
-private val RefSage = Color(0xFF8FA48F)
+private val RefDeep = Color(0xFF3F5046)
+private val RefIvory = Color(0xFFF8F5F0)
+private val RefGold = Color(0xFFC3B39E)
+private val RefSage = Color(0xFF9DA69D)
 
 @Composable
 fun ReferenceHomeScreen(
@@ -95,17 +97,17 @@ fun ReferenceHomeScreen(
             ) {
                 val compact = maxWidth < 345.dp
                 Image(
-                    painter = painterResource(R.drawable.medicine_home_hero_full),
+                    painter = painterResource(R.drawable.medicine_minimal_hero),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds,
+                    contentScale = ContentScale.Crop,
                 )
                 Box(
                     Modifier.fillMaxSize().background(
                         Brush.horizontalGradient(
-                            0f to bg.copy(alpha = .65f),
-                            .31f to bg.copy(alpha = .40f),
-                            .56f to bg.copy(alpha = .07f),
+                            0f to bg.copy(alpha = .32f),
+                            .31f to bg.copy(alpha = .21f),
+                            .56f to bg.copy(alpha = .03f),
                             1f to Color.Transparent,
                         )
                     )
@@ -195,10 +197,10 @@ fun ReferenceHomeScreen(
                     BoxWithConstraints(Modifier.fillMaxWidth().height(192.dp)) {
                         val compact = maxWidth < 345.dp
                         Image(
-                            painter = painterResource(R.drawable.medicine_reading_background_full),
+                            painter = painterResource(R.drawable.medicine_minimal_card),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.FillBounds,
+                            contentScale = ContentScale.Crop,
                         )
                         Box(
                             Modifier.fillMaxSize().background(
@@ -309,10 +311,10 @@ fun ReferenceHomeScreen(
                 ) {
                     Box(Modifier.fillMaxSize()) {
                         Image(
-                            painter = painterResource(R.drawable.medicine_treatments_background_full),
+                            painter = painterResource(R.drawable.medicine_minimal_card),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.FillBounds,
+                            contentScale = ContentScale.Crop,
                         )
                         Box(
                             Modifier.fillMaxSize().background(
@@ -347,12 +349,12 @@ fun ReferenceHomeScreen(
                 }
             }
             val sections = listOf(
-                ReferenceSection("Читать книгу", "${book.chapters.size} глав", R.drawable.medicine_home_icon_book, Route.Book),
-                ReferenceSection("Темы", "${book.topics.size} разделов", R.drawable.medicine_home_icon_topics, Route.Topics),
-                ReferenceSection("Средства", "${book.remedies.size} позиций", R.drawable.medicine_home_icon_remedy, Route.Remedies),
-                ReferenceSection("Закладки", "${store.bookmarks.size} сохранено", R.drawable.medicine_home_icon_bookmark, Route.Bookmarks),
-                ReferenceSection("Заметки", "${store.notes.size} записей", R.drawable.medicine_home_icon_notes, Route.Notes),
-                ReferenceSection("Источники", "Ссылки и описания", R.drawable.medicine_home_icon_source, Route.Source),
+                ReferenceSection("Читать книгу", "${book.chapters.size} глав", Icons.Outlined.MenuBook, Route.Book),
+                ReferenceSection("Темы", "${book.topics.size} разделов", Icons.Outlined.GridView, Route.Topics),
+                ReferenceSection("Средства", "${book.remedies.size} позиций", Icons.Outlined.Science, Route.Remedies),
+                ReferenceSection("Закладки", "${store.bookmarks.size} сохранено", Icons.Outlined.BookmarkBorder, Route.Bookmarks),
+                ReferenceSection("Заметки", "${store.notes.size} записей", Icons.Outlined.EditNote, Route.Notes),
+                ReferenceSection("Источники", "Ссылки и описания", Icons.Outlined.LibraryBooks, Route.Source),
             )
             items(3,key={"ref-row-$it"}) { index ->
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(9.dp)) {
@@ -368,7 +370,7 @@ fun ReferenceHomeScreen(
                         border = BorderStroke(1.dp,outline),
                     ) {
                         Row(Modifier.fillMaxWidth().padding(13.dp),verticalAlignment=Alignment.CenterVertically) {
-                            Image(painterResource(R.drawable.medicine_more_02),null,Modifier.size(34.dp), contentScale=ContentScale.Fit)
+                            Icon(Icons.Outlined.Dashboard, null, Modifier.size(25.dp), tint=MaterialTheme.colorScheme.primary)
                             Spacer(Modifier.width(8.dp))
                             Text("Быстрые подборки",Modifier.weight(1f),
                                 fontFamily=WebModernFont,fontSize=13.sp)
@@ -381,7 +383,7 @@ fun ReferenceHomeScreen(
 }
 
 private data class ReferenceSection(
-    val title:String,val meta:String,val photoRes:Int,val route:Route
+    val title:String,val meta:String,val icon:ImageVector,val route:Route
 )
 
 @Composable
@@ -394,18 +396,27 @@ private fun ReferenceSectionCard(
         color=MaterialTheme.colorScheme.surface,
         shape=RoundedCornerShape(17.dp),
         border=BorderStroke(1.dp,MaterialTheme.colorScheme.outline),
-        shadowElevation=1.dp,
+        shadowElevation=0.dp,
     ) {
         Row(
             Modifier.fillMaxSize().padding(start=4.dp,end=7.dp,top=6.dp,bottom=6.dp),
             verticalAlignment=Alignment.CenterVertically,
         ) {
-            Image(
-                painterResource(section.photoRes), null,
-                Modifier.size(width=57.dp,height=62.dp),
-                contentScale=ContentScale.Fit,
-            )
-            Spacer(Modifier.width(3.dp))
+            Surface(
+                modifier = Modifier.size(44.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = section.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(25.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            Spacer(Modifier.width(9.dp))
             Column(Modifier.weight(1f),verticalArrangement=Arrangement.Center) {
                 Text(
                     section.title,
