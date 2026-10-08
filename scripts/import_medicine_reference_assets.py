@@ -31,16 +31,16 @@ def crop_asset(name, bbox, out_size, mode="fade", quality=86):
     rgba.save(output,format="WEBP",quality=quality,method=6)
     assert output.stat().st_size>700
     print(name,output.stat().st_size, out_size)
-crop_asset("medicine_photo_hero",(580,117,1018,425),(438,308),"hero",88)
-crop_asset("medicine_photo_reading",(39,476,338,766),(299,290),"reading",90)
+crop_asset("medicine_photo_hero",(580,145,1018,425),(438,280),"hero",88)
+crop_asset("medicine_photo_reading",(39,476,304,761),(265,285),"reading",90)
 crop_asset("medicine_photo_treatments",(43,875,355,1008),(312,133),"therapy",88)
 icons={
-  "book":(55,1028,198,1116),
-  "topics":(545,1028,687,1116),
-  "remedy":(55,1151,195,1240),
-  "bookmark":(543,1149,688,1241),
-  "notes":(55,1268,197,1365),
-  "source":(542,1264,690,1365),
+  "book":(55,1028,169,1116),
+  "topics":(545,1028,645,1116),
+  "remedy":(55,1151,172,1240),
+  "bookmark":(543,1149,653,1241),
+  "notes":(55,1268,172,1365),
+  "source":(542,1264,655,1365),
 }
 for name,box in icons.items():
     crop_asset("medicine_photo_ic_"+name,box,(114,88),"icon",88)

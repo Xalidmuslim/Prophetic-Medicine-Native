@@ -2,7 +2,7 @@ name: Import user-provided visual reference assets once
 on:
   push:
     branches: [codex/medicine-premium-redesign-20261008]
-    paths: [.github/workflows/import-reference-assets.yml]
+    paths: [.github/workflows/import-reference-assets.yml, scripts/import_medicine_reference_assets.py]
 permissions:
   contents: write
 jobs:
