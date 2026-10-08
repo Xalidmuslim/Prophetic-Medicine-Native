@@ -61,6 +61,12 @@ class MainActivity : ComponentActivity() {
         // The system splash may restore bright status-bar icons. Set the
         // initial contrast before Compose, then reapply after splash dismissal.
         applySystemBars(launchTheme)
+        // Apply the contrast after the Android splash window is actually removed.
+        // Compose's first visible frame may precede the platform's exit callback.
+        splash.setOnExitAnimationListener { splashView ->
+            splashView.remove()
+            applySystemBars(launchTheme)
+        }
 
         MedicineRuntimeWarmup.preload(appContext)
 
