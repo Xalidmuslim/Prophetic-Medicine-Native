@@ -14,7 +14,13 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -210,21 +216,45 @@ fun ReaderScreen(
                         bottom = 16.dp,
                     ),
             ) {
-                Text(
-                    chapter.section,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontFamily = WebSansFont,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 12.sp,
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    chapter.title,
-                    fontFamily = WebLiterataFont,
-                    fontSize = 28.sp,
-                    lineHeight = 31.sp,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                // Decorative chapter heading. Chapter titles remain verbatim and
+                // progress/anchor coordinates are still measured from the body below.
+                Box(
+                    Modifier.fillMaxWidth().heightIn(min = 170.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                ) {
+                    Image(
+                        painter = painterResource(R.drawable.medicine_home_hero_full),
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.FillBounds,
+                        alpha = .74f,
+                    )
+                    Box(
+                        Modifier.matchParentSize().background(
+                            Brush.horizontalGradient(
+                                0f to MaterialTheme.colorScheme.background.copy(alpha = .88f),
+                                .58f to MaterialTheme.colorScheme.background.copy(alpha = .71f),
+                                1f to Color.Transparent,
+                            )
+                        )
+                    )
+                    Column(Modifier.fillMaxWidth().padding(12.dp)) {
+                        Text(
+                            chapter.section,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontFamily = WebSansFont,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            chapter.title,
+                            fontFamily = WebLiterataFont,
+                            fontSize = 28.sp, lineHeight = 31.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
                 Spacer(Modifier.height(11.dp))
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outline
@@ -542,20 +572,23 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
     }
 
     if (block.type == "hadith") {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min)
-                .padding(vertical = 7.dp),
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(
+                1.dp, MaterialTheme.colorScheme.outline.copy(alpha = .65f),
+            ),
         ) {
-            Box(
-                Modifier
-                    .width(3.dp)
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-            Spacer(Modifier.width(13.dp))
-            Column(Modifier.weight(1f)) {
+            Box(Modifier.fillMaxWidth()) {
+                Image(
+                    painter = painterResource(R.drawable.medicine_hadith_frame),
+                    contentDescription = null,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.FillBounds,
+                    alpha = .42f,
+                )
+                Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp)) {
                 Text(
                     "ХАДИС",
                     color = MaterialTheme.colorScheme.primary,
@@ -597,6 +630,7 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
                         modifier = Modifier.weight(1f),
                     )
                     Text("›", color = MaterialTheme.colorScheme.primary, fontSize = 18.sp)
+                }
                 }
             }
         }

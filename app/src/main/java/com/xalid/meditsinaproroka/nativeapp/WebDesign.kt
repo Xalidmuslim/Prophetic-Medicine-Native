@@ -650,18 +650,18 @@ private data class MoreItem(val iconId: Int, val title: String, val subtitle: St
 @Composable
 fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
     val rows = listOf(
-        MoreItem(R.drawable.medicine_photo_ic_book, "Оглавление книги", "111 глав в оригинальном порядке", Route.Book),
-        MoreItem(R.drawable.medicine_photo_ic_remedy, "Как лечили / что применялось", "Состояния и методы из лечебных глав", Route.Treatments),
-        MoreItem(R.drawable.medicine_photo_ic_topics, "Быстрые подборки", "Головная боль, сон, тревога, рукъя и другое", Route.Collections),
-        MoreItem(R.drawable.medicine_photo_ic_remedy, "Справочник средств", "Переходы к местам полного текста", Route.Remedies),
-        MoreItem(R.drawable.medicine_photo_ic_source, "Словарь терминов", "Рукъя, кыст, тальбина и другое", Route.Glossary),
-        MoreItem(R.drawable.medicine_photo_ic_source, "Хадисы и источники", "Источники, указанные в тексте", Route.Hadiths),
-        MoreItem(R.drawable.medicine_photo_ic_notes, "Мои заметки", "Выделения и личные записи", Route.Notes),
-        MoreItem(R.drawable.medicine_photo_ic_book, "История чтения", "Недавно открытые главы", Route.History),
-        MoreItem(R.drawable.medicine_photo_ic_book, "Чтение без интернета", "Книга доступна без подключения к сети", Route.Offline),
-        MoreItem(R.drawable.premium_ic_more, "Настройки чтения", "Шрифт, интервал и оформление", Route.Settings),
-        MoreItem(R.drawable.medicine_photo_ic_source, "О книге", "Автор, содержание и важное примечание", Route.About),
-        MoreItem(R.drawable.medicine_photo_ic_source, "Об издании", "Состав книги и указанные источники", Route.Source),
+        MoreItem(R.drawable.medicine_more_00, "Оглавление книги", "111 глав в оригинальном порядке", Route.Book),
+        MoreItem(R.drawable.medicine_more_01, "Как лечили / что применялось", "Состояния и методы из лечебных глав", Route.Treatments),
+        MoreItem(R.drawable.medicine_more_02, "Быстрые подборки", "Головная боль, сон, тревога, рукъя и другое", Route.Collections),
+        MoreItem(R.drawable.medicine_more_03, "Справочник средств", "Переходы к местам полного текста", Route.Remedies),
+        MoreItem(R.drawable.medicine_more_04, "Словарь терминов", "Рукъя, кыст, тальбина и другое", Route.Glossary),
+        MoreItem(R.drawable.medicine_more_05, "Хадисы и источники", "Источники, указанные в тексте", Route.Hadiths),
+        MoreItem(R.drawable.medicine_more_06, "Мои заметки", "Выделения и личные записи", Route.Notes),
+        MoreItem(R.drawable.medicine_more_07, "История чтения", "Недавно открытые главы", Route.History),
+        MoreItem(R.drawable.medicine_more_08, "Чтение без интернета", "Книга доступна без подключения к сети", Route.Offline),
+        MoreItem(R.drawable.medicine_more_09, "Настройки чтения", "Шрифт, интервал и оформление", Route.Settings),
+        MoreItem(R.drawable.medicine_more_10, "О книге", "Автор, содержание и важное примечание", Route.About),
+        MoreItem(R.drawable.medicine_more_11, "Об издании", "Состав книги и указанные источники", Route.Source),
     )
     Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         WebHeader("Ещё", settings = { navigate(Route.Settings) })
@@ -685,7 +685,7 @@ fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
                         Image(
                             painter = painterResource(row.iconId),
                             contentDescription = null,
-                            modifier = Modifier.size(42.dp),
+                            modifier = Modifier.size(46.dp),
                             contentScale = ContentScale.Fit,
                         )
                         Spacer(Modifier.width(10.dp))

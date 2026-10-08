@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 
 /*
  * Presentation-only implementation based on the exact owner-supplied reference.
- * Images are cropped into app resources from that reference, are offline WebP,
+ * New original offline WebP illustrations are produced for this app,
  * and are never fetched from the network at runtime.
  * The original book, all Route handlers, AppStore, Reader and search remain intact.
  */
@@ -82,148 +82,146 @@ fun ReferenceHomeScreen(
     val bg = MaterialTheme.colorScheme.background
     val ink = MaterialTheme.colorScheme.onSurface
     val secondary = MaterialTheme.colorScheme.onSurfaceVariant
-    Column(modifier.fillMaxSize().background(bg)) {
-        // Reference architecture continues through the title area instead of
-        // disappearing behind a plain ivory app bar.
-        Box(Modifier.fillMaxWidth().height(80.dp)) {
-            Image(
-                painter = painterResource(R.drawable.medicine_photo_arch),
-                contentDescription = null,
-                modifier = Modifier.align(Alignment.CenterEnd).width(202.dp).height(80.dp),
-                contentScale = ContentScale.Fit,
-                alpha = .48f,
-            )
-        Row(
-            Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, top = 8.dp, bottom = 5.dp)
-                .align(Alignment.Center),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painterResource(R.drawable.medicine_photo_app_icon), null,
-                Modifier.size(52.dp).clip(RoundedCornerShape(15.dp)),
-                contentScale = ContentScale.Crop,
-            )
-            Spacer(Modifier.width(10.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    "Медицина Пророка ﷺ", color = ink,
-                    fontFamily = WebLiterataFont,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 19.sp,
-                    lineHeight = 23.sp,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "Ибн Каййим аль-Джаузия",
-                    fontFamily = WebModernFont, fontSize = 11.5.sp,
-                    color = secondary, maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Surface(
-                onClick = { navigate(Route.Settings) },
-                modifier = Modifier.size(42.dp),
-                shape = CircleShape, color = surface,
-                border = BorderStroke(1.dp, outline.copy(alpha = .65f)),
-                shadowElevation = 1.dp,
+    // Home masthead and introductory text share ONE full-bleed original
+    // botanical photograph; no separate squared image or clipped overlay.
+    LazyColumn(
+        modifier = modifier.fillMaxSize().background(bg),
+        contentPadding = PaddingValues(start = 13.dp, end = 13.dp, top = 0.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(9.dp),
+    ) {
+        item(key = "ref-hero") {
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth().height(295.dp),
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Settings, "Настройки",
-                        Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-        }
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 13.dp, end = 13.dp, top = 1.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(9.dp),
-        ) {
-            item(key = "ref-hero") {
-                BoxWithConstraints(
-                    modifier = Modifier.fillMaxWidth().height(191.dp),
-                ) {
-                    val compact = maxWidth < 345.dp
-                    Image(
-                        painter = painterResource(R.drawable.medicine_photo_hero),
-                        contentDescription = null,
-                        modifier = Modifier.align(Alignment.BottomEnd)
-                            .width(maxWidth * .65f).height(182.dp),
-                        // Never crop the bowl, pestle, oil bottle or leaves.
-                        contentScale = ContentScale.Fit,
-                    )
-                    // Photographic crop stays visible at right, while the ivory
-                    // overlay guarantees contrast behind the Russian heading.
-                    Box(
-                        Modifier.fillMaxSize().background(
-                            Brush.horizontalGradient(
-                                0f to bg,
-                                .27f to bg,
-                                .48f to bg.copy(alpha = .95f),
-                                .65f to bg.copy(alpha = .22f),
-                                .89f to Color.Transparent,
-                                1f to Color.Transparent,
-                            )
+                val compact = maxWidth < 345.dp
+                Image(
+                    painter = painterResource(R.drawable.medicine_home_hero_full),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds,
+                )
+                Box(
+                    Modifier.fillMaxSize().background(
+                        Brush.horizontalGradient(
+                            0f to bg.copy(alpha = .65f),
+                            .31f to bg.copy(alpha = .40f),
+                            .56f to bg.copy(alpha = .07f),
+                            1f to Color.Transparent,
                         )
                     )
+                )
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(start = 2.dp, end = 2.dp, top = 5.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.medicine_photo_app_icon),
+                            contentDescription = null,
+                            modifier = Modifier.size(52.dp),
+                            contentScale = ContentScale.Fit,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "Медицина Пророка ﷺ", color = ink,
+                                fontFamily = WebLiterataFont,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 19.sp, lineHeight = 23.sp,
+                                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                "Ибн Каййим аль-Джаузия",
+                                fontFamily = WebModernFont,
+                                fontSize = 11.5.sp, color = secondary,
+                                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        Surface(
+                            onClick = { navigate(Route.Settings) },
+                            modifier = Modifier.size(42.dp),
+                            shape = CircleShape, color = surface.copy(alpha = .89f),
+                            border = BorderStroke(1.dp, outline.copy(alpha = .65f)),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Default.Settings, "Настройки",
+                                    Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.height(15.dp))
                     Column(
-                        modifier = Modifier.align(Alignment.TopStart)
-                            .fillMaxWidth(.61f)
-                            .padding(start = 6.dp, top = 8.dp),
+                        modifier = Modifier.fillMaxWidth(.65f).padding(start = 7.dp),
                     ) {
                         Text(
                             "Книга, разбитая\nна главы, темы\nи средства",
-                            color = ink,
-                            fontFamily = WebLiterataFont,
+                            color = ink, fontFamily = WebLiterataFont,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = if (compact) 21.sp else 24.sp,
                             lineHeight = if (compact) 26.sp else 30.sp,
                         )
-                        Spacer(Modifier.height(9.dp))
+                        Spacer(Modifier.height(12.dp))
                         Text(
                             "Полный русский текст с поиском, заметками, источниками и офлайн-доступом.",
-                            color = secondary,
-                            fontFamily = WebModernFont,
+                            color = secondary, fontFamily = WebModernFont,
                             fontSize = if (compact) 11.5.sp else 12.5.sp,
                             lineHeight = 18.sp,
                         )
                     }
-                    Box(
-                        Modifier.align(Alignment.BottomCenter).fillMaxWidth(.47f)
-                            .height(1.dp).background(RefGold.copy(alpha=.57f))
-                    )
                 }
+                Box(
+                    Modifier.fillMaxWidth().height(26.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, bg),
+                        ))
+                )
             }
+        }
             item(key = "ref-reading") {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = surface,
                     shape = RoundedCornerShape(19.dp),
                     border = BorderStroke(1.dp, outline),
-                    shadowElevation = 2.dp,
+                    shadowElevation = 1.dp,
                 ) {
-                    Row(
-                        Modifier.fillMaxWidth()
-                            .background(Brush.horizontalGradient(
-                                0f to Color(0xFFF0EBE1),
-                                .46f to surface,
-                                1f to surface,
-                            ))
-                            .heightIn(min = 168.dp)
-                            .padding(start = 7.dp, end = 11.dp, top = 8.dp, bottom = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
+                    BoxWithConstraints(Modifier.fillMaxWidth().height(192.dp)) {
+                        val compact = maxWidth < 345.dp
                         Image(
-                            painterResource(R.drawable.medicine_photo_reading_new), null,
-                            modifier = Modifier.width(111.dp).height(142.dp),
-                            contentScale = ContentScale.Fit,
+                            painter = painterResource(R.drawable.medicine_reading_background_full),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.FillBounds,
                         )
-                        Spacer(Modifier.width(5.dp))
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                        Box(
+                            Modifier.fillMaxSize().background(
+                                Brush.horizontalGradient(
+                                    0f to Color.Transparent,
+                                    .29f to surface.copy(alpha = .12f),
+                                    .42f to surface.copy(alpha = .84f),
+                                    .73f to surface.copy(alpha = .94f),
+                                    1f to surface.copy(alpha = .90f),
+                                )
+                            )
+                        )
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(
+                                    start = if (compact) 116.dp else 132.dp,
+                                    end = 11.dp, top = 9.dp, bottom = 9.dp,
+                                ),
+                            verticalArrangement = Arrangement.spacedBy(7.dp),
+                        ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Surface(
-                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = .92f),
                                     shape = CircleShape,
                                 ) {
                                     Text(
@@ -250,9 +248,10 @@ fun ReferenceHomeScreen(
                             Text(
                                 displayTitle,
                                 color = ink, fontFamily = WebLiterataFont,
-                                fontSize = 14.sp, lineHeight = 18.sp,
+                                fontSize = 13.5.sp, lineHeight = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                maxLines = 4, overflow = TextOverflow.Ellipsis,
+                                maxLines = 3, overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
                             )
                             Box(Modifier.fillMaxWidth().height(5.dp).clip(CircleShape)
                                 .background(outline.copy(alpha = .48f))) {
@@ -302,46 +301,58 @@ fun ReferenceHomeScreen(
             item(key = "ref-treatments") {
                 Surface(
                     onClick = { navigate(Route.Treatments) },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 75.dp),
+                    modifier = Modifier.fillMaxWidth().height(84.dp),
                     color = surface,
                     shape = RoundedCornerShape(18.dp),
                     border = BorderStroke(1.dp, outline),
                     shadowElevation = 1.dp,
                 ) {
-                    Row(Modifier.fillMaxWidth()
-                        .background(Brush.horizontalGradient(
-                            0f to Color(0xFFF2EFE7),
-                            .48f to Color(0xFFF6F2E8),
-                            1f to Color(0xFFF1EFE5),
-                        ))
-                        .padding(start=2.dp,end=12.dp,top=4.dp,bottom=4.dp),
-                        verticalAlignment=Alignment.CenterVertically) {
+                    Box(Modifier.fillMaxSize()) {
                         Image(
-                            painterResource(R.drawable.medicine_photo_treatments_new), null,
-                            Modifier.size(width=122.dp,height=78.dp),
-                            contentScale = ContentScale.Fit,
+                            painter = painterResource(R.drawable.medicine_treatments_background_full),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.FillBounds,
                         )
-                        Spacer(Modifier.width(2.dp))
-                        Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)) {
-                            Text("Как лечили / что применялось",
-                                fontFamily=WebLiterataFont,fontSize=14.sp,
-                                lineHeight=18.sp,fontWeight=FontWeight.SemiBold,
-                                maxLines=2,overflow=TextOverflow.Ellipsis)
-                            Text("Состояние → средства → полный текст",
-                                fontSize=10.sp,lineHeight=14.sp,
-                                color=secondary,maxLines=2)
+                        Box(
+                            Modifier.fillMaxSize().background(
+                                Brush.horizontalGradient(
+                                    0f to Color.Transparent,
+                                    .31f to surface.copy(alpha = .20f),
+                                    .49f to surface.copy(alpha = .88f),
+                                    1f to surface.copy(alpha = .91f),
+                                )
+                            )
+                        )
+                        Row(
+                            Modifier.fillMaxSize().padding(start = 116.dp, end = 11.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                Text(
+                                    "Как лечили / что применялось",
+                                    fontFamily = WebLiterataFont, fontSize = 13.5.sp,
+                                    lineHeight = 18.sp, fontWeight = FontWeight.SemiBold,
+                                    maxLines = 2, overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    "Состояние → средства → полный текст",
+                                    fontSize = 10.sp, lineHeight = 14.sp,
+                                    color = secondary, maxLines = 2,
+                                )
+                            }
+                            Text("›", color = RefDeep, fontSize = 25.sp)
                         }
-                        Text("›",color=RefDeep,fontSize=25.sp)
                     }
                 }
             }
             val sections = listOf(
-                ReferenceSection("Читать книгу", "${book.chapters.size} глав", R.drawable.medicine_photo_ic_book, Route.Book),
-                ReferenceSection("Темы", "${book.topics.size} разделов", R.drawable.medicine_photo_ic_topics, Route.Topics),
-                ReferenceSection("Средства", "${book.remedies.size} позиций", R.drawable.medicine_photo_ic_remedy, Route.Remedies),
-                ReferenceSection("Закладки", "${store.bookmarks.size} сохранено", R.drawable.medicine_photo_ic_bookmark, Route.Bookmarks),
-                ReferenceSection("Заметки", "${store.notes.size} записей", R.drawable.medicine_photo_ic_notes, Route.Notes),
-                ReferenceSection("Источники", "Ссылки и описания", R.drawable.medicine_photo_ic_source, Route.Source),
+                ReferenceSection("Читать книгу", "${book.chapters.size} глав", R.drawable.medicine_home_icon_book, Route.Book),
+                ReferenceSection("Темы", "${book.topics.size} разделов", R.drawable.medicine_home_icon_topics, Route.Topics),
+                ReferenceSection("Средства", "${book.remedies.size} позиций", R.drawable.medicine_home_icon_remedy, Route.Remedies),
+                ReferenceSection("Закладки", "${store.bookmarks.size} сохранено", R.drawable.medicine_home_icon_bookmark, Route.Bookmarks),
+                ReferenceSection("Заметки", "${store.notes.size} записей", R.drawable.medicine_home_icon_notes, Route.Notes),
+                ReferenceSection("Источники", "Ссылки и описания", R.drawable.medicine_home_icon_source, Route.Source),
             )
             items(3,key={"ref-row-$it"}) { index ->
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(9.dp)) {
@@ -357,7 +368,7 @@ fun ReferenceHomeScreen(
                         border = BorderStroke(1.dp,outline),
                     ) {
                         Row(Modifier.fillMaxWidth().padding(13.dp),verticalAlignment=Alignment.CenterVertically) {
-                            Image(painterResource(R.drawable.premium_ic_book),null,Modifier.size(30.dp))
+                            Image(painterResource(R.drawable.medicine_more_02),null,Modifier.size(34.dp), contentScale=ContentScale.Fit)
                             Spacer(Modifier.width(8.dp))
                             Text("Быстрые подборки",Modifier.weight(1f),
                                 fontFamily=WebModernFont,fontSize=13.sp)
@@ -367,7 +378,6 @@ fun ReferenceHomeScreen(
                 }
             }
         }
-    }
 }
 
 private data class ReferenceSection(
@@ -392,7 +402,7 @@ private fun ReferenceSectionCard(
         ) {
             Image(
                 painterResource(section.photoRes), null,
-                Modifier.size(width=54.dp,height=61.dp).padding(2.dp),
+                Modifier.size(width=57.dp,height=62.dp),
                 contentScale=ContentScale.Fit,
             )
             Spacer(Modifier.width(3.dp))
