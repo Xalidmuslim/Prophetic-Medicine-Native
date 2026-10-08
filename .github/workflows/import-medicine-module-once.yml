@@ -1,0 +1,239 @@
+name: Import original native Medicine module once
+on:
+  push:
+    branches: ['codex/medicine-copy-module-20261008']
+    paths: ['.github/workflows/import-medicine-module-once.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  copy-verify-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Checkout independent destination
+        uses: actions/checkout@v4
+        with:
+          path: target
+      - name: Checkout read-only original app at pinned commit
+        uses: actions/checkout@v4
+        with:
+          repository: Xalidmuslim/AlFatiha-Native
+          ref: 1a1531a876b76c1b0d4cf53b9a0e9fb527d54b7a
+          path: original
+          persist-credentials: false
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Install Android 36 SDK
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Copy original module and isolate host navigation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p target/app/src
+          rsync -a original/medicine/src/main/ target/app/src/main/
+          cp original/medicine/consumer-rules.pro target/app/consumer-rules.pro
+          cp original/gradle.properties target/gradle.properties
+          cp original/build.gradle target/build.gradle
+          cat > target/settings.gradle <<'EOF'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }
+          rootProject.name='PropheticMedicineNative'
+          include ':app'
+          EOF
+          cp original/medicine/build.gradle target/app/build.gradle
+          cat > target/.gitignore <<'EOF'
+          .gradle/
+          .idea/
+          local.properties
+          **/build/
+          *.apk
+          *.aab
+          *.jks
+          *.keystore
+          EOF
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("target/app/build.gradle")
+          s=p.read_text()
+          assert "id 'com.android.library'" in s and "consumerProguardFiles 'consumer-rules.pro'" in s
+          s=s.replace("id 'com.android.library'", "id 'com.android.application'", 1)
+          s=s.replace("consumerProguardFiles 'consumer-rules.pro'", """applicationId 'com.xalid.meditsinaproroka.nativeapp.modulecopy'
+                  targetSdk 35
+                  versionCode 1
+                  versionName '1.0.0-modulecopy-preview'""", 1)
+          p.write_text(s)
+          p=Path("target/app/src/main/AndroidManifest.xml")
+          s=p.read_text()
+          assert '<application>' in s and 'android:exported="false"' in s
+          s=s.replace('<application>', '<application android:label="@string/app_name" android:icon="@drawable/medicine_launcher" android:roundIcon="@drawable/medicine_launcher">')
+          s=s.replace('android:exported="false"', 'android:exported="true"')
+          needle='android:theme="@style/Theme.MedicinaProrokaNative" />'
+          assert needle in s
+          s=s.replace(needle, '''android:theme="@style/Theme.MedicinaProrokaNative">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>''')
+          p.write_text(s)
+          p=Path("target/app/src/main/java/com/xalid/meditsinaproroka/nativeapp/App.kt")
+          s=p.read_text()
+          assert 'else -> navigateToHeartPrayer(context, "home")' in s
+          s=s.replace('else -> navigateToHeartPrayer(context, "home")', 'else -> activity?.finish()',1)
+          old='''            HeartPrayerBottomNav(
+                          onHome = { navigateToHeartPrayer(context, "home") },
+                          onContents = { root(Route.Book) },
+                          onProgress = { navigateToHeartPrayer(context, "progress") },
+                          onMenu = { navigateToHeartPrayer(context, "menu") },
+                      )'''
+          assert old in s
+          s=s.replace(old,'''            StandaloneBottomNav(
+                          current = current,
+                          onHome = { root(Route.Home) },
+                          onTopics = { root(Route.Topics) },
+                          onSearch = { root(Route.Search) },
+                          onBookmarks = { root(Route.Bookmarks) },
+                          onMore = { root(Route.More) },
+                      )''',1)
+          assert 'onGlobalSearch = { navigateToHeartPrayer(context, "search") }' in s
+          s=s.replace('onGlobalSearch = { navigateToHeartPrayer(context, "search") }', 'onGlobalSearch = { navigate(Route.Search) }',1)
+          start=s.index('private fun navigateToHeartPrayer(')
+          s=s[:start]+'''@Composable
+          private fun StandaloneBottomNav(
+              current: Route,
+              onHome: () -> Unit,
+              onTopics: () -> Unit,
+              onSearch: () -> Unit,
+              onBookmarks: () -> Unit,
+              onMore: () -> Unit,
+          ) {
+              data class NavItem(
+                  val label: String,
+                  val icon: androidx.compose.ui.graphics.vector.ImageVector,
+                  val selected: Boolean,
+                  val action: () -> Unit,
+              )
+              val items = listOf(
+                  NavItem("Главная", androidx.compose.material.icons.Icons.Default.Home, current == Route.Home, onHome),
+                  NavItem("Темы", androidx.compose.material.icons.Icons.Default.GridView, current == Route.Topics, onTopics),
+                  NavItem("Поиск", androidx.compose.material.icons.Icons.Default.Search, current == Route.Search, onSearch),
+                  NavItem("Закладки", androidx.compose.material.icons.Icons.Default.BookmarkBorder, current == Route.Bookmarks, onBookmarks),
+                  NavItem("Ещё", androidx.compose.material.icons.Icons.Default.MoreHoriz, current == Route.More, onMore),
+              )
+              val dark = MaterialTheme.colorScheme.background.red < 0.25f
+              val background = if (dark) Color(0xFF1F2522) else Color(0xFFFBF7F0)
+              val muted = if (dark) Color(0xFFAAB3AD) else Color(0xFF55524C)
+              val shape = RoundedCornerShape(18.dp)
+              Row(
+                  modifier = Modifier.fillMaxWidth()
+                      .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                      .padding(horizontal = 8.dp, vertical = 5.dp)
+                      .height(69.dp)
+                      .shadow(2.dp, shape)
+                      .clip(shape)
+                      .background(background),
+                  verticalAlignment = Alignment.CenterVertically,
+              ) {
+                  items.forEach { item ->
+                      val color = if (item.selected) Color(0xFF356D57) else muted
+                      Column(
+                          modifier = Modifier.weight(1f).fillMaxHeight().clickable { item.action() }
+                              .padding(top = 4.dp, bottom = 2.dp),
+                          horizontalAlignment = Alignment.CenterHorizontally,
+                          verticalArrangement = Arrangement.Center
+                      ) {
+                          androidx.compose.material3.Icon(
+                              imageVector = item.icon, contentDescription = item.label,
+                              modifier = Modifier.size(24.dp), tint = color
+                          )
+                          Spacer(Modifier.height(4.dp))
+                          Text(item.label, fontSize = 11.sp, color = color, maxLines = 1)
+                      }
+                  }
+              }
+          }
+          '''
+          p.write_text(s)
+          PY
+          cat > target/README.md <<'EOF'
+          # Медицина Пророка ﷺ — самостоятельный Android-проект из модуля
+          
+          Код и ресурсы этого приложения **скопированы из существующего нативного модуля**
+          \`Xalidmuslim/AlFatiha-Native/medicine\` на фиксированном commit \`1a1531a876b76c1b0d4cf53b9a0e9fb527d54b7a\`.
+          
+          Это не сгенерированная с нуля копия и не WebView: все 13 Kotlin-файлов, ресурсы,
+          шрифты, иконка и оригинальные данные \`book.json\` перенесены из существующего модуля.
+          
+          Минимальные изменения для самостоятельного APK: модуль \`com.android.library\`
+          стал Android-приложением, появился LAUNCHER, а переходы в разделы "Компаса сердца"
+          заменены локальной навигацией (главная, темы, поиск, закладки, ещё).
+          Исходный модуль "Компаса сердца" не изменён.
+          
+          ВАЖНО: debug APK имеет отдельный package id \`com.xalid.meditsinaproroka.nativeapp.modulecopy\`
+          и должен установиться рядом с основной версией. Для обновления старого APK
+          без потери данных нужен тот же ключ подписи. Бинарная/визуальная идентичность
+          пока не подтверждена проверкой на реальном Android-устройстве.
+          
+          Авторские права на опубликованный русский перевод должны быть проверены владельцем.
+          Оригинал уже находится в публичном репозитории источника; этот PR не объединяется автоматически.
+          EOF
+          test -s target/app/src/main/assets/book.json
+          python3 - <<'PY'
+          import json
+          p="target/app/src/main/assets/book.json"
+          with open(p,encoding="utf-8") as f: d=json.load(f)
+          print("Book structure:",{key:len(d.get(key,[])) for key in ("chapters","topics","remedies","treatments")})
+          assert len(d.get("chapters",[]))==111
+          assert len(d.get("topics",[]))==15
+          PY
+          cd target
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md .gitignore build.gradle settings.gradle gradle.properties app
+          git diff --cached --stat | tail -25
+      - name: Compile and verify native APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd target
+          gradle :app:assembleDebug --no-daemon --stacktrace
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          unzip -t app/build/outputs/apk/debug/app-debug.apk >/dev/null
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload tested standalone APK
+        id: apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: Prophetic-Medicine-Original-Module-APK
+          path: target/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Commit exact source after successful build
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd target
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          git diff --cached --quiet && { echo 'Nothing to commit'; exit 0; }
+          git diff --cached --name-only | grep -q '^app/src/main/java/'
+          git diff --cached --name-only | grep -q '^app/src/main/assets/book.json'
+          git commit -m "feat: import complete original native medicine module as independent Android app"
+          git push origin HEAD:codex/medicine-copy-module-20261008
+      - name: Publish download link
+        env:
+          APK_URL: ${{ steps.apk.outputs.artifact-url }}
+        run: echo "[Download independent Medicine APK]($APK_URL)" >> "$GITHUB_STEP_SUMMARY"
