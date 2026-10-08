@@ -226,12 +226,20 @@ private fun WebTopicCard(topic: Topic, modifier: Modifier, onClick: () -> Unit) 
             Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(R.drawable.medicine_topic_unified),
-                contentDescription = null,
-                modifier = Modifier.size(46.dp),
-                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
-            )
+            Surface(
+                modifier = Modifier.size(42.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Default.GridView,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(
