@@ -31,11 +31,7 @@ data class BookData(
     }
 
     companion object {
-        fun load(context: Context): BookData {
-            val hasFullText = context.assets.list("")?.contains("book.json") == true
-            val file = if (hasFullText) "book.json" else "book_index.json"
-            return parse(context.assets.open(file).bufferedReader().use { it.readText() }, hasFullText)
-        }
+        fun load(context: Context): BookData = BookRepository.load(context)
 
         fun parse(raw: String, hasFullText: Boolean): BookData {
             val obj = JSONObject(raw)
