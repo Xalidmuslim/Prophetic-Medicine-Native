@@ -645,82 +645,67 @@ private fun WebChip(label: String, onClick: () -> Unit) {
     }
 }
 
-private data class MoreItem(
-    val icon: String,
-    val title: String,
-    val subtitle: String,
-    val route: Route,
-)
+private data class MoreItem(val iconId: Int, val title: String, val subtitle: String, val route: Route)
 
 @Composable
 fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
     val rows = listOf(
-        MoreItem("▤", "Оглавление книги", "111 глав в оригинальном порядке", Route.Book),
-        MoreItem("✚", "Как лечили / что применялось", "Состояния и методы из лечебных глав", Route.Treatments),
-        MoreItem("▦", "Быстрые подборки", "Головная боль, сон, тревога, рукъя и другое", Route.Collections),
-        MoreItem("⚗", "Справочник средств", "Переходы к местам полного текста", Route.Remedies),
-        MoreItem("Aa", "Словарь терминов", "Рукъя, кыст, тальбина и другое", Route.Glossary),
-        MoreItem("≡", "Хадисы и источники", "Источники, указанные в тексте", Route.Hadiths),
-        MoreItem("✎", "Мои заметки", "Выделения и личные записи", Route.Notes),
-        MoreItem("◷", "История чтения", "Недавно открытые главы", Route.History),
-        MoreItem("↓", "Чтение без интернета", "Книга доступна без подключения к сети", Route.Offline),
-        MoreItem("⚙", "Настройки чтения", "Шрифт, интервал и оформление", Route.Settings),
-        MoreItem("i", "О книге", "Автор, содержание и важное примечание", Route.About),
-        MoreItem("§", "Об издании", "Состав книги и указанные источники", Route.Source),
+        MoreItem(R.drawable.premium_ic_book, "Оглавление книги", "111 глав в оригинальном порядке", Route.Book),
+        MoreItem(R.drawable.premium_ic_remedy, "Как лечили / что применялось", "Состояния и методы из лечебных глав", Route.Treatments),
+        MoreItem(R.drawable.premium_ic_topics, "Быстрые подборки", "Головная боль, сон, тревога, рукъя и другое", Route.Collections),
+        MoreItem(R.drawable.premium_ic_remedy, "Справочник средств", "Переходы к местам полного текста", Route.Remedies),
+        MoreItem(R.drawable.premium_ic_source, "Словарь терминов", "Рукъя, кыст, тальбина и другое", Route.Glossary),
+        MoreItem(R.drawable.premium_ic_source, "Хадисы и источники", "Источники, указанные в тексте", Route.Hadiths),
+        MoreItem(R.drawable.premium_ic_notes, "Мои заметки", "Выделения и личные записи", Route.Notes),
+        MoreItem(R.drawable.premium_ic_book, "История чтения", "Недавно открытые главы", Route.History),
+        MoreItem(R.drawable.premium_ic_book, "Чтение без интернета", "Книга доступна без подключения к сети", Route.Offline),
+        MoreItem(R.drawable.premium_ic_more, "Настройки чтения", "Шрифт, интервал и оформление", Route.Settings),
+        MoreItem(R.drawable.premium_ic_source, "О книге", "Автор, содержание и важное примечание", Route.About),
+        MoreItem(R.drawable.premium_ic_source, "Об издании", "Состав книги и указанные источники", Route.Source),
     )
-
     Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         WebHeader("Ещё", settings = { navigate(Route.Settings) })
         androidx.compose.foundation.lazy.LazyColumn(
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 18.dp, bottom = 26.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            item {
+            items(rows.size) { index ->
+                val row = rows[index]
                 Surface(
+                    onClick = { navigate(row.route) },
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(18.dp),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 ) {
-                    Column {
-                        rows.forEachIndexed { index, row ->
-                            Row(
-                                Modifier.fillMaxWidth()
-                                    .clickable { navigate(row.route) }
-                                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Surface(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = RoundedCornerShape(11.dp),
-                                ) {
-                                    Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                                        Text(
-                                            row.icon,
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            fontFamily = if (row.icon == "Aa") WebSerifFont else WebSansFont,
-                                            fontSize = if (row.icon == "Aa") 20.sp else 18.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                        )
-                                    }
-                                }
-                                Spacer(Modifier.width(14.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(row.title, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                                    Spacer(Modifier.height(3.dp))
-                                    Text(
-                                        row.subtitle,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontSize = 12.sp,
-                                        lineHeight = 16.sp,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                                Text("→", fontSize = 18.sp)
-                            }
-                            if (index != rows.lastIndex) {
-                                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                            }
+                    Row(
+                        Modifier.fillMaxWidth().heightIn(min = 74.dp)
+                            .padding(horizontal = 13.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Image(
+                            painter = painterResource(row.iconId),
+                            contentDescription = null,
+                            modifier = Modifier.size(45.dp),
+                            contentScale = ContentScale.Fit,
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                row.title, fontFamily = WebModernFont,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp, lineHeight = 20.sp,
+                            )
+                            Spacer(Modifier.height(3.dp))
+                            Text(
+                                row.subtitle,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp,
+                                lineHeight = 17.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
+                        Text("›", color = MaterialTheme.colorScheme.primary, fontSize = 25.sp)
                     }
                 }
             }
@@ -777,7 +762,7 @@ fun WebSettingsScreen(store: AppStore, modifier: Modifier, back: () -> Unit) {
             item {
                 WebSettingCard("Оформление") {
                     Text(
-                        "Светлая и тёмная тема общие для всех разделов «Пути сердца».",
+                        "Светлая и тёмная тема действуют во всех разделах приложения.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = WebSansFont,
                         fontSize = 11.5.sp,
