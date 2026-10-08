@@ -250,7 +250,9 @@ private fun StandaloneBottomNav(
     val surface = MaterialTheme.colorScheme.surface
     val selected = MaterialTheme.colorScheme.primary
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 5.dp),
+        modifier = Modifier.fillMaxWidth()
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+            .padding(horizontal = 12.dp, vertical = 5.dp),
         color = surface,
         shape = RoundedCornerShape(22.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, outline.copy(alpha = .70f)),
@@ -259,7 +261,6 @@ private fun StandaloneBottomNav(
         Column {
             Row(
                 modifier = Modifier.fillMaxWidth()
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
                     .height(62.dp)
                     .padding(horizontal = 5.dp, vertical = 3.dp),
                 verticalAlignment = Alignment.CenterVertically,
