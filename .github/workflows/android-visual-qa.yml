@@ -11,6 +11,7 @@ on:
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Screens.kt'
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/MainActivity.kt'
       - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt'
+      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/App.kt'
       - 'app/src/main/res/drawable-nodpi/medicine_photo_*.webp'
   workflow_dispatch:
 
