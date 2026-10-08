@@ -13,7 +13,9 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -63,6 +65,8 @@ fun ReaderScreen(
     val scrollState = rememberScrollState()
     var settingsOpen by remember { mutableStateOf(false) }
     var bookmarkFolderOpen by remember { mutableStateOf(false) }
+    val previousChapter = book.chapters.firstOrNull { it.id == chapter.previousId }
+    val nextChapter = book.chapters.firstOrNull { it.id == chapter.nextId }
     val context = LocalContext.current
     val topics = remember(book, chapter) {
         chapter.topics.mapNotNull { id ->
@@ -268,49 +272,7 @@ fun ReaderScreen(
                 }
 
                 Spacer(Modifier.height(20.dp))
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    val prev = book.chapters.firstOrNull {
-                        it.id == chapter.previousId
-                    }
-                    val next = book.chapters.firstOrNull {
-                        it.id == chapter.nextId
-                    }
-
-                    OutlinedButton(
-                        onClick = {
-                            if (prev != null) {
-                                navigate(Route.Reader(prev.id))
-                            }
-                        },
-                        enabled = prev != null,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Icon(
-                            Icons.Default.ChevronLeft,
-                            contentDescription = null,
-                        )
-                        Text("Предыдущая")
-                    }
-
-                    Button(
-                        onClick = {
-                            if (next != null) {
-                                navigate(Route.Reader(next.id))
-                            }
-                        },
-                        enabled = next != null,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text("Следующая")
-                        Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null,
-                        )
-                    }
-                }
+                // Chapter navigation lives in the fixed bottom reader toolbar.
 
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider()
@@ -441,19 +403,58 @@ fun ReaderScreen(
             }
         }
 
-        FloatingActionButton(
-            onClick = { settingsOpen = true },
+        // Native reader controls live in a dedicated toolbar. Unlike the old
+        // floating 'Aa' button, this does not cover the Next action or text.
+        Surface(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
+                .align(Alignment.BottomCenter)
+                .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(18.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            shadowElevation = 2.dp,
         ) {
-            Text(
-                "Aa",
-                fontFamily = WebSerifFont,
-                fontWeight = FontWeight.Bold,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().height(54.dp).padding(horizontal = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = { settingsOpen = true }) {
+                    Text(
+                        "Aa",
+                        fontFamily = WebSerifFont,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        if (store.isChapterBookmarked(chapter.id)) {
+                            store.toggleChapterBookmark(chapter.id)
+                        } else {
+                            bookmarkFolderOpen = true
+                        }
+                    },
+                ) {
+                    Icon(
+                        if (store.isChapterBookmarked(chapter.id)) Icons.Default.Star
+                        else Icons.Default.StarBorder,
+                        contentDescription = "Закладка главы",
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                IconButton(
+                    onClick = { previousChapter?.let { navigate(Route.Reader(it.id)) } },
+                    enabled = previousChapter != null,
+                ) {
+                    Icon(Icons.Default.ChevronLeft, contentDescription = "Предыдущая глава")
+                }
+                IconButton(
+                    onClick = { nextChapter?.let { navigate(Route.Reader(it.id)) } },
+                    enabled = nextChapter != null,
+                ) {
+                    Icon(Icons.Default.ChevronRight, contentDescription = "Следующая глава")
+                }
+            }
         }
     }
 
