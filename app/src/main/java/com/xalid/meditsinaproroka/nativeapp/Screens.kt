@@ -191,8 +191,8 @@ fun TopicsScreen(book: BookData, modifier: Modifier, open: (String) -> Unit) {
     Column(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         WebHeader("Темы", "${book.topics.size} тематических разделов")
         LazyColumn(
-            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 22.dp),
-            verticalArrangement = Arrangement.spacedBy(9.dp),
+            contentPadding = PaddingValues(start = 13.dp, end = 13.dp, top = 9.dp, bottom = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp),
         ) {
             item {
                 Text(
@@ -210,26 +210,45 @@ fun TopicsScreen(book: BookData, modifier: Modifier, open: (String) -> Unit) {
     }
 }
 
+/** Choose an existing bundled, offline illustration by the meaning of each topic.
+ * No category text, routing or dataset is modified.
+ */
+private fun topicIllustration(title: String): Int {
+    val name = title.lowercase()
+    return when {
+        "хиджам" in name || "кровопуск" in name -> R.drawable.medicine_photo_ic_remedy
+        "рук" in name || "духов" in name -> R.drawable.medicine_photo_ic_source
+        "сглаз" in name || "защит" in name -> R.drawable.medicine_photo_ic_bookmark
+        "питан" in name || "продукт" in name -> R.drawable.medicine_photo_treatments
+        "лекар" in name || "трав" in name -> R.drawable.medicine_photo_ic_remedy
+        "сон" in name || "отдых" in name -> R.drawable.medicine_photo_ic_notes
+        "основ" in name || "принцип" in name -> R.drawable.medicine_photo_ic_book
+        "болез" in name || "лечен" in name -> R.drawable.medicine_photo_ic_remedy
+        "источ" in name || "хадис" in name -> R.drawable.medicine_photo_ic_source
+        else -> R.drawable.medicine_photo_ic_topics
+    }
+}
+
 @Composable
 private fun WebTopicCard(topic: Topic, modifier: Modifier, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        modifier = modifier.heightIn(min = 78.dp),
+        modifier = modifier.heightIn(min = 68.dp),
         color = MaterialTheme.colorScheme.surface,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shadowElevation = 1.dp,
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 11.dp, vertical = 8.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             androidx.compose.foundation.Image(
-                painter = androidx.compose.ui.res.painterResource(R.drawable.medicine_photo_ic_topics),
+                painter = androidx.compose.ui.res.painterResource(topicIllustration(topic.title)),
                 contentDescription = null,
-                modifier = Modifier.size(53.dp),
+                modifier = Modifier.size(47.dp),
             )
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     topic.title, fontFamily = WebModernFont,
