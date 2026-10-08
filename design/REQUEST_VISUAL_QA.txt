@@ -1,9 +1,1 @@
-Visual regression of final owner's original generated app artwork.
-Confirm on Android API 35 Pixel 6:
-- Masthead & headline are ONE continuous image, no hard square seam.
-- Six home navigation icons fully visible, including bookmark; no cropping.
-- 12 rows in More show 12 DIFFERENT complete icons, correct routes unchanged.
-- Two home cards use full-width illustrated backgrounds, not detached thumbnails.
-- Reader heading uses a generic decorative illustration with literal existing chapter title.
-- Original hadith text & sources are unchanged, hadith cards have a distinct decorative frame.
-- Texts, search, notes, bookmarks, reading progress, and data behavior unchanged.
+Visual QA final minimalist native Android: pale ivory backgrounds, no cropped or lush plants; six distinct outline home icons; twelve distinct More icons; Topics single neutral icon; hadiths in neutral outlined cards; text and logic unchanged. Screenshot home, more, topic, reader on Pixel 6 API35. Existing book.json and Store.kt hashes must remain protected.
