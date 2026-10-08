@@ -4,8 +4,10 @@ mkdir -p screenshots
 PACKAGE=com.xalid.meditsinaproroka.nativeapp.premiumreview
 ACTIVITY=com.xalid.meditsinaproroka.nativeapp.MainActivity
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n "$PACKAGE/$ACTIVITY"
-sleep 6
+adb shell pm list packages | grep -F "package:$PACKAGE"
+# Discover launcher instead of assuming the installed manifest's activity path.
+adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1
+sleep 8
 adb shell pidof "$PACKAGE"
 adb shell screencap -p /sdcard/medicine_home.png
 adb pull /sdcard/medicine_home.png screenshots/home.png
