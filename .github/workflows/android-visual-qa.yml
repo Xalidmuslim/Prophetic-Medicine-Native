@@ -2,17 +2,12 @@ name: Medicine visual smoke QA (native emulator)
 on:
   push:
     branches: ['codex/medicine-premium-redesign-20261008']
+    # Fast UI iterations build the APK separately via native-apk.yml.
+    # Run costly emulator screenshot QA only when explicitly requested.
     paths:
       - '.github/workflows/android-visual-qa.yml'
       - 'scripts/medicine_visual_qa.sh'
-      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Theme.kt'
-      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/PremiumHome.kt'
-      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/ReferenceHome.kt'
-      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Screens.kt'
-      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/MainActivity.kt'
-      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/Reader.kt'
-      - 'app/src/main/java/com/xalid/meditsinaproroka/nativeapp/App.kt'
-      - 'app/src/main/res/drawable-nodpi/medicine_photo_*.webp'
+      - 'design/REQUEST_VISUAL_QA.txt'
   workflow_dispatch:
 
 permissions:
