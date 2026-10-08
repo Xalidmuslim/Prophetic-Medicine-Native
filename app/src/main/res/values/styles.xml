@@ -9,7 +9,7 @@
     </style>
     <style name="Theme.MedicinaSplash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#F7F3EB</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/medicine_launcher</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/medicine_photo_app_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.MedicinaProrokaNative</item>
     </style>
 </resources>

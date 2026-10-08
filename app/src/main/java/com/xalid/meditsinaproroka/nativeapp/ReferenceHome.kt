@@ -88,7 +88,7 @@ fun ReferenceHomeScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Image(
-                painterResource(R.drawable.medicine_launcher), null,
+                painterResource(R.drawable.medicine_photo_app_icon), null,
                 Modifier.size(52.dp).clip(RoundedCornerShape(15.dp)),
                 contentScale = ContentScale.Crop,
             )
