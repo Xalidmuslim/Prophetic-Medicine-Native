@@ -223,10 +223,10 @@ fun ReaderScreen(
                         .clip(RoundedCornerShape(16.dp)),
                 ) {
                     Image(
-                        painter = painterResource(R.drawable.medicine_home_hero_full),
+                        painter = painterResource(R.drawable.medicine_minimal_card),
                         contentDescription = null,
                         modifier = Modifier.matchParentSize(),
-                        contentScale = ContentScale.FillBounds,
+                        contentScale = ContentScale.Crop,
                         alpha = .74f,
                     )
                     Box(
@@ -581,14 +581,7 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
             ),
         ) {
             Box(Modifier.fillMaxWidth()) {
-                Image(
-                    painter = painterResource(R.drawable.medicine_hadith_frame),
-                    contentDescription = null,
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.FillBounds,
-                    alpha = .42f,
-                )
-                Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp)) {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 17.dp)) {
                 Text(
                     "ХАДИС",
                     color = MaterialTheme.colorScheme.primary,
