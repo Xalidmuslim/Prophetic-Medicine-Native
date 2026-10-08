@@ -1,0 +1,10 @@
+.block{position:relative;margin:0 0 1.05rem;padding:0 .2rem;font-family:var(--font-family-display);font-size:var(--reader-font-size,1.08rem);line-height:var(--reader-line-height,1.78);color:var(--foreground)}
+.block p{white-space:pre-line;margin:0;padding-right:4rem;user-select:text;-webkit-user-select:text}
+.label{display:inline-block;margin:0 0 .42rem;font-family:var(--font-family-base);font-size:.62rem;line-height:1;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary)}
+.quran,.hadith,.historical_note{padding:.9rem 2rem .9rem 1rem;border-left:2px solid var(--primary);background:color-mix(in srgb,var(--primary) 5%,var(--surface));border-radius:0 var(--radius) var(--radius) 0}
+.hadith{border-left-color:color-mix(in srgb,var(--primary) 65%,var(--accent));background:color-mix(in srgb,var(--primary) 3%,var(--surface))}
+.historical_note{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface));font-size:calc(var(--reader-font-size,1.08rem) * .92)}
+.actions{position:absolute;right:.05rem;top:.2rem;display:flex;align-items:center;gap:.05rem;opacity:.42;transition:opacity var(--animation-duration-fast)}
+.block:focus-within .actions,.block:hover .actions{opacity:1}
+.subheading{scroll-margin-top:76px;font-family:var(--font-family-display);font-weight:600;color:var(--foreground);line-height:1.2;margin:2rem .15rem .85rem;font-size:1.35rem;user-select:text;-webkit-user-select:text}
+@media(max-width:360px){.block{font-size:var(--reader-font-size,1.04rem)}.block p{padding-right:3.6rem}.quran,.hadith,.historical_note{padding-left:.8rem;padding-right:1.7rem}}
