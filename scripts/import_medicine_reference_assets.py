@@ -34,6 +34,7 @@ def crop_asset(name, bbox, out_size, mode="fade", quality=86):
 crop_asset("medicine_photo_hero",(580,145,1018,425),(438,280),"hero",88)
 crop_asset("medicine_photo_reading",(39,476,304,761),(265,285),"reading",90)
 crop_asset("medicine_photo_treatments",(43,875,355,1008),(312,133),"therapy",88)
+crop_asset("medicine_photo_app_icon",(52,17,210,170),(160,155),"icon",92)
 icons={
   "book":(55,1028,169,1116),
   "topics":(545,1028,645,1116),
@@ -47,5 +48,5 @@ for name,box in icons.items():
 with open("design/REFERENCE_ASSET_PROVENANCE.md","w",encoding="utf-8") as f:
     f.write("# Original user-provided visual reference\n\n")
     f.write("Source: the visual reference supplied by the app owner on 2026-10-08 (1024 x 1536).\n")
-    f.write("Nine offline alpha-masked WebP photos cropped from that source: hero, book, remedy, six icons.\n")
+    f.write("Ten offline alpha-masked WebP photos cropped from that source: app icon, hero, book, remedy, six icons.\n")
     f.write("No user book text, settings, reader screens or other assets are modified.\n")
