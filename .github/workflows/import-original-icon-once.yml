@@ -1,0 +1,42 @@
+name: Import owner-owned medicine icon once
+
+on:
+  push:
+    branches: ['codex/medicine-native-preview-20261008']
+    paths: ['.github/workflows/import-original-icon-once.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  copy-icon:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: target
+          persist-credentials: true
+      - uses: actions/checkout@v4
+        with:
+          repository: Xalidmuslim/AlFatiha-Native
+          ref: main
+          path: original
+          persist-credentials: false
+      - name: Copy approved 3D medicine icon without modifying old app
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=original/medicine/src/main/res/drawable/medicine_launcher.webp
+          DST=target/app/src/main/res/drawable-nodpi/medicine_launcher.webp
+          test -s "$SRC"
+          mkdir -p "$(dirname "$DST")"
+          cp "$SRC" "$DST"
+          git -C target config user.name 'github-actions[bot]'
+          git -C target config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C target add app/src/main/res/drawable-nodpi/medicine_launcher.webp
+          if git -C target diff --cached --quiet; then
+            echo 'Original icon already present'
+            exit 0
+          fi
+          git -C target commit -m 'assets: preserve original medicine icon from owner repository'
+          git -C target push origin "HEAD:codex/medicine-native-preview-20261008"
