@@ -517,15 +517,8 @@ private fun PaperBackgroundChoices(store: AppStore) {
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
                         )
-                        when (value) {
-                            "sage" -> Box(
-                                Modifier.fillMaxSize()
-                                    .background(Color(0xFFE1EBDD).copy(alpha = 0.28f))
-                            )
-                            "light" -> Box(
-                                Modifier.fillMaxSize()
-                                    .background(Color(0xFFFFFAF1).copy(alpha = 0.065f))
-                            )
+                        readerPaperOverlay(value)?.let { wash ->
+                            Box(Modifier.fillMaxSize().background(wash))
                         }
                         Text(
                             "Aa",
