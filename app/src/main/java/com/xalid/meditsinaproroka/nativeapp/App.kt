@@ -80,10 +80,13 @@ fun MedicinaApp(book: BookData, store: AppStore) {
     var searchQuery by remember { mutableStateOf("") }
     var searchFilter by remember { mutableStateOf(SearchFilter.ALL) }
     var bookmarkFolder by remember { mutableStateOf("Все") }
+    var lastReaderChapterId by remember { mutableStateOf<String?>(null) }
+    var contentsRequest by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
     val activity = context as? Activity
 
     fun navigate(route: Route, push: Boolean = true) {
+        if (route is Route.Reader) lastReaderChapterId = route.chapterId
         if (push && current != route) backStack.add(current)
         current = route
     }
@@ -135,7 +138,11 @@ fun MedicinaApp(book: BookData, store: AppStore) {
                     onGlobalSearch = { navigate(Route.Search) },
                     onToggleTheme = store::toggleSharedTheme,
                 )
-                Route.Book -> BookScreen(book, screenModifier, ::goBack) { navigate(Route.Reader(it)) }
+                Route.Book -> BookScreen(
+                    book, screenModifier, ::goBack,
+                    focusChapterId = lastReaderChapterId,
+                    focusRequest = contentsRequest,
+                ) { navigate(Route.Reader(it)) }
                 Route.Topics -> TopicsScreen(book, screenModifier) { navigate(Route.TopicDetail(it)) }
                 Route.Search -> SearchScreen(
                     book = book,
@@ -187,7 +194,11 @@ fun MedicinaApp(book: BookData, store: AppStore) {
             StandaloneBottomNav(
                 current = current,
                 onHome = { root(Route.Home) },
-                onTopics = { root(Route.Topics) },
+                onTopics = {
+                    if (current is Route.Reader) lastReaderChapterId = (current as Route.Reader).chapterId
+                    contentsRequest += 1
+                    root(Route.Book)
+                },
                 onSearch = { root(Route.Search) },
                 onBookmarks = { root(Route.Bookmarks) },
                 onMore = { root(Route.More) },
@@ -235,7 +246,7 @@ private fun StandaloneBottomNav(
     data class NavItem(val label: String, val icon: Int, val selected: Boolean, val action: () -> Unit)
     val items = listOf(
         NavItem("Главная", R.drawable.nav_home, current == Route.Home, onHome),
-        NavItem("Темы", R.drawable.nav_topics, current == Route.Topics, onTopics),
+        NavItem("Темы", R.drawable.nav_topics, current == Route.Topics || current == Route.Book, onTopics),
         NavItem("Поиск", R.drawable.nav_search, current == Route.Search, onSearch),
         NavItem("Закладки", R.drawable.nav_bookmark, current == Route.Bookmarks, onBookmarks),
         NavItem("Ещё", R.drawable.nav_more, current == Route.More, onMore),
