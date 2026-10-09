@@ -15,6 +15,7 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -213,6 +215,7 @@ fun ReaderScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .clipToBounds()
                     .verticalScroll(scrollState)
                     .padding(
                         start = 16.dp,
@@ -456,11 +459,11 @@ fun ReaderScreen(
             }
         }
 
-        FloatingActionButton(
+        SmallFloatingActionButton(
             onClick = { settingsOpen = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 16.dp),
+                .padding(end = 12.dp, bottom = 12.dp),
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
         ) {
@@ -705,52 +708,77 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
     val isQuran = block.type == "quran"
     val isSpecial = isQuran || block.type == "historical_note"
     if (isSpecial) {
-        // Only Quran blocks receive the sage-paper treatment. Preserve the
-        // original text, the user's font settings and selection/annotation logic.
-        val isLight = MaterialTheme.colorScheme.background.red >= 0.25f
-        val paperColor = if (isLight) Color(0xFFD8E5D5) else Color(0xFF2B3830)
-        val paperBorder = if (isLight) Color(0xFFA6BAA5) else Color(0xFF627967)
-        val quranHeading = if (isLight) Color(0xFF3F624B) else Color(0xFFB9D4BF)
-        val quranInk = if (isLight) Color(0xFF243029) else Color(0xFFE8EDE5)
+        val light = MaterialTheme.colorScheme.background.red >= 0.25f
+        val sagePaper = if (light) Color(0xFFD8E5D5) else Color(0xFF2B3830)
+        val sageBorder = if (light) Color(0xFFA6BAA5) else Color(0xFF667D6B)
+        val sageAccent = if (light) Color(0xFF3F624B) else Color(0xFFB9D4BF)
+        val sageInk = if (light) Color(0xFF243029) else Color(0xFFE8EDE5)
 
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 5.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(17.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isQuran) paperColor else MaterialTheme.colorScheme.surfaceVariant,
+                containerColor = if (isQuran) sagePaper else MaterialTheme.colorScheme.surfaceVariant,
             ),
-            border = if (isQuran) BorderStroke(1.dp, paperBorder) else null,
+            border = if (isQuran) BorderStroke(1.dp, sageBorder) else null,
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
-            Column(Modifier.padding(if (isQuran) 16.dp else 13.dp)) {
-                if (label != null) {
-                    Text(
-                        label.uppercase(),
-                        color = if (isQuran) quranHeading else MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = if (isQuran) 0.8.sp else 0.sp,
+            Box(Modifier.fillMaxWidth()) {
+                if (isQuran && light) {
+                    Image(
+                        painter = painterResource(R.drawable.antique_card_paper),
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.Crop,
+                        alpha = 0.17f,
                     )
-                    if (isQuran) {
-                        Spacer(Modifier.height(8.dp))
-                        HorizontalDivider(
-                            modifier = Modifier.width(44.dp),
-                            thickness = 1.dp,
-                            color = paperBorder,
+                }
+                if (isQuran) {
+                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(13.dp)) {
+                        // Identical left-side vertical cue to the hadith style.
+                        Box(
+                            Modifier.width(3.dp).fillMaxHeight()
+                                .background(sageAccent.copy(alpha = 0.72f))
                         )
-                        Spacer(Modifier.height(10.dp))
-                    } else {
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.width(13.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "КОРАН",
+                                color = sageAccent,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.7.sp,
+                            )
+                            Spacer(Modifier.height(7.dp))
+                            SelectableNativeText(
+                                chapter, block, store, textColorOverride = sageInk,
+                            )
+                            block.quranReference?.takeIf { it.isNotBlank() }?.let { reference ->
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    reference.trim(),
+                                    color = sageAccent,
+                                    fontFamily = WebSansFont,
+                                    fontSize = 11.sp,
+                                    lineHeight = 15.sp,
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Column(Modifier.padding(13.dp)) {
+                        if (label != null) {
+                            Text(
+                                label.uppercase(),
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(6.dp))
+                        }
+                        SelectableNativeText(chapter, block, store)
                     }
                 }
-                SelectableNativeText(
-                    chapter,
-                    block,
-                    store,
-                    textColorOverride = if (isQuran) quranInk else null,
-                )
             }
         }
     } else {

@@ -62,6 +62,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -238,26 +239,71 @@ private fun StandaloneBottomNav(
         NavItem("Ещё", R.drawable.nav_more, current == Route.More, onMore),
     )
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
-    val background = if (dark) MaterialTheme.colorScheme.surface else AntiquePaper
-    androidx.compose.material3.Surface(color = background, shadowElevation = 2.dp) {
-        Row(
-            Modifier.fillMaxWidth().navigationBarsPadding().padding(vertical = 3.dp),
-            verticalAlignment = Alignment.CenterVertically,
+    val panelShape = RoundedCornerShape(16.dp)
+    // Inset navigation panel above the same antique book paper, with original icons.
+    Box(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
+        if (!dark) {
+            Image(
+                painter = painterResource(
+                    if (current is Route.Reader) R.drawable.reader_parchment_source
+                    else R.drawable.antique_parchment
+                ),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.80f,
+            )
+        }
+        Box(
+            Modifier.fillMaxWidth().navigationBarsPadding()
+                .padding(start = 13.dp, end = 13.dp, top = 7.dp, bottom = 9.dp),
         ) {
-            items.forEach { item ->
-                val color = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                Column(
-                    Modifier.weight(1f).heightIn(min = 56.dp)
-                        .semantics { selected = item.selected }
-                        .clickable(role = Role.Tab, onClick = item.action)
-                        .padding(vertical = 3.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+            Box(
+                Modifier.fillMaxWidth()
+                    .clip(panelShape)
+                    .background(if (dark) MaterialTheme.colorScheme.surface else Color(0xFFF2E8D9))
+                    .border(
+                        width = 0.9.dp,
+                        color = if (dark) MaterialTheme.colorScheme.outline else Color(0xFFCDBBA2),
+                        shape = panelShape,
+                    ),
+            ) {
+                if (!dark) {
+                    Image(
+                        painter = painterResource(R.drawable.antique_card_paper),
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.Crop,
+                        alpha = 0.40f,
+                    )
+                }
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 3.dp, vertical = 5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AntiqueIcon(item.icon, Modifier.size(33.dp))
-                    Spacer(Modifier.height(1.dp))
-                    Text(item.label, fontFamily = WebSansFont, fontSize = 10.5.sp, lineHeight = 13.sp,
-                        color = color, fontWeight = if (item.selected) FontWeight.SemiBold else FontWeight.Normal)
+                    items.forEach { item ->
+                        val color = if (item.selected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        Column(
+                            Modifier.weight(1f).heightIn(min = 55.dp)
+                                .semantics { selected = item.selected }
+                                .clickable(role = Role.Tab, onClick = item.action)
+                                .padding(vertical = 2.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            AntiqueIcon(item.icon, Modifier.size(33.dp))
+                            Spacer(Modifier.height(1.dp))
+                            Text(
+                                item.label,
+                                fontFamily = WebSansFont,
+                                fontSize = 10.5.sp,
+                                lineHeight = 13.sp,
+                                color = color,
+                                fontWeight = if (item.selected) FontWeight.SemiBold else FontWeight.Normal,
+                            )
+                        }
+                    }
                 }
             }
         }
