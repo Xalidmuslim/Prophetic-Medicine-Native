@@ -76,7 +76,7 @@ fun WebHeader(
     Surface(color = MaterialTheme.colorScheme.background, tonalElevation = 0.dp) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 51.dp).padding(horizontal = 7.dp, vertical = 1.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 46.dp).padding(horizontal = 7.dp, vertical = 0.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
@@ -94,8 +94,8 @@ fun WebHeader(
                         title,
                         fontFamily = WebModernFont,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 17.5.sp,
-                        lineHeight = 21.sp,
+                        fontSize = 16.5.sp,
+                        lineHeight = 20.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -454,9 +454,9 @@ fun WebSettingsScreen(store: AppStore, modifier: Modifier, back: () -> Unit) {
 fun WebReaderSettingsSheet(store: AppStore, onDone: () -> Unit) {
     val settings = store.settings
     androidx.compose.foundation.lazy.LazyColumn(
-        modifier = Modifier.fillMaxWidth().heightIn(max = 540.dp),
-        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 2.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(max = 460.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         item {
             Row(
@@ -483,12 +483,12 @@ fun WebReaderSettingsSheet(store: AppStore, onDone: () -> Unit) {
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             ) {
                 Text(
-                    "Так будет выглядеть основной текст книги после изменения настроек.",
+                    "Предпросмотр шрифта и интервала для чтения.",
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
                     fontFamily = readerComposeFontFamily(settings.fontFamily),
                     fontSize = settings.fontSizeSp.sp,
                     lineHeight = (settings.fontSizeSp * settings.lineSpacing).sp,
-                    maxLines = 2,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
@@ -593,7 +593,7 @@ fun WebReaderSettingsSheet(store: AppStore, onDone: () -> Unit) {
         item {
             Button(
                 onClick = onDone,
-                modifier = Modifier.fillMaxWidth().height(42.dp),
+                modifier = Modifier.fillMaxWidth().height(38.dp),
                 shape = RoundedCornerShape(9.dp),
             ) {
                 Text("Готово", fontFamily = WebSansFont, fontWeight = FontWeight.SemiBold)
@@ -613,7 +613,7 @@ private fun ReaderFontChip(
     val active = value == selected
     Surface(
         onClick = onClick,
-        modifier = modifier.height(44.dp),
+        modifier = modifier.height(37.dp),
         color = if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(9.dp),
         border = BorderStroke(
