@@ -106,10 +106,13 @@ class MainActivity : ComponentActivity() {
                     if (stillLoading) {
                         BookLoadingScreen()
                     } else {
-                        state?.bookResult?.fold(
-                            onSuccess = { book -> MedicinaApp(book = book, store = state.store) },
-                            onFailure = { BookLoadErrorScreen() },
-                        )
+                        val loaded = state
+                        if (loaded != null) {
+                            loaded.bookResult.fold(
+                                onSuccess = { book -> MedicinaApp(book = book, store = loaded.store) },
+                                onFailure = { BookLoadErrorScreen() },
+                            )
+                        }
                     }
                 }
             }
