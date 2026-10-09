@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.animateColorAsState
@@ -123,22 +125,14 @@ fun MedicinaApp(book: BookData, store: AppStore) {
                 val incomingChapter = targetState as? Route.Reader
                 val pageTurn = outgoingChapter != null && incomingChapter != null &&
                     outgoingChapter.chapterId != incomingChapter.chapterId
-                // No semitransparent beige layer between contents and reader.
-                // Both full-size pages slide directly over each other.
-                val fromContentsToReader =
+                // Contents <-> chapter changes use no movement, alpha overlay
+                // or size animation. This removes parchment afterimages/ghosting
+                // caused by drawing both differently textured pages mid-transition.
+                val betweenContentsAndReader =
                     (initialState is Route.Book && targetState is Route.Reader) ||
                         (initialState is Route.Reader && targetState is Route.Book)
-                if (fromContentsToReader) {
-                    val direction = if (initialState is Route.Book) 1 else -1
-                    slideInHorizontally(
-                        animationSpec = tween(180, easing = FastOutSlowInEasing),
-                        initialOffsetX = { distance -> direction * distance / 12 },
-                    ).togetherWith(
-                        slideOutHorizontally(
-                            animationSpec = tween(180, easing = FastOutSlowInEasing),
-                            targetOffsetX = { distance -> -direction * distance / 12 },
-                        )
-                    ).using(SizeTransform(clip = true))
+                if (betweenContentsAndReader) {
+                    EnterTransition.None.togetherWith(ExitTransition.None).using(null)
                 } else if (pageTurn) {
                     val oldOrder = book.chapters.firstOrNull {
                         it.id == outgoingChapter!!.chapterId
