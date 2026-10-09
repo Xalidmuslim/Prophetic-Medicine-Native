@@ -95,7 +95,7 @@ fun WebHeader(
                 ) {
                     Text(
                         title,
-                        fontFamily = WebModernFont,
+                        fontFamily = WebLiterataFont,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = (if (compact) 15.sp else 16.5.sp),
                         lineHeight = (if (compact) 18.sp else 20.sp),
@@ -161,7 +161,7 @@ internal fun WebCollectionCard(
         Column(Modifier.padding(15.dp)) {
             Text(
                 collection.title,
-                fontFamily = WebModernFont,
+                fontFamily = WebLiterataFont,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 17.sp,
                 lineHeight = 20.sp,
