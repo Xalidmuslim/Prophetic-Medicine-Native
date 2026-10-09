@@ -1,6 +1,9 @@
 package com.xalid.meditsinaproroka.nativeapp
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
@@ -133,7 +136,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
                 if (!enlarged) {
                     Spacer(Modifier.width(13.dp))
                     Column(Modifier.weight(1f).padding(end = artWidth - 12.dp)) {
-                        Text(book.title, fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
+                        Text(book.title, fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold,
                             fontSize = 23.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onBackground)
                         Spacer(Modifier.height(6.dp))
                         Text(book.author, fontFamily = WebSansFont, fontSize = 10.5.sp, lineHeight = 13.sp,
@@ -144,7 +147,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
             if (enlarged) {
                 // At accessible font sizes, put all native text below the still life.
                 Spacer(Modifier.height(heroHeight - 70.dp + 4.dp))
-                Text(book.title, fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
+                Text(book.title, fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold,
                     fontSize = 23.sp, lineHeight = 26.sp)
                 Spacer(Modifier.height(6.dp))
                 Text(book.author, fontFamily = WebSansFont, fontSize = 11.sp, lineHeight = 15.sp)
@@ -156,6 +159,11 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
 @Composable
 private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: () -> Unit) {
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
+    val animatedProgress by animateFloatAsState(
+        targetValue = (pct / 100f).coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing),
+        label = "readerProgress",
+    )
     PaperCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -167,7 +175,7 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
                 Spacer(Modifier.width(6.dp))
                 Box(Modifier.size((39 * LocalDensity.current.fontScale.coerceAtLeast(1f)).dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(
-                        progress = { pct / 100f }, modifier = Modifier.fillMaxSize(),
+                        progress = { animatedProgress }, modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.primary,
                         trackColor = if (dark) MaterialTheme.colorScheme.outline else AntiqueBorder.copy(alpha = 0.6f),
                         strokeWidth = 2.dp,
@@ -177,11 +185,11 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
                 }
             }
             Spacer(Modifier.height(2.dp))
-            Text(title, fontFamily = WebSerifFont, fontWeight = FontWeight.SemiBold,
+            Text(title, fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold,
                 fontSize = 16.5.sp, lineHeight = 20.sp)
             Spacer(Modifier.height(9.dp))
             LinearProgressIndicator(
-                progress = { pct / 100f }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
+                progress = { animatedProgress }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = if (dark) MaterialTheme.colorScheme.outline else AntiqueBorder,
                 drawStopIndicator = {},
@@ -199,7 +207,7 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
                     // Keep the button matte; artwork must never compete with its label.
                     Text(if (hasLast) "Продолжить →" else "Начать чтение →",
                         Modifier.padding(horizontal = 38.dp, vertical = 10.dp),
-                        fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
+                        fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold,
                         fontSize = 18.sp, lineHeight = 23.sp, color = Color(0xFFFFFAEF))
                 }
             }
@@ -217,7 +225,7 @@ private fun AntiqueQuickCard(@DrawableRes icon: Int, title: String, subtitle: St
                 Spacer(Modifier.weight(1f))
                 Icon(Icons.Default.ChevronRight, null, Modifier.size(20.dp))
             }
-            Text(title, fontFamily = WebSerifFont, fontWeight = FontWeight.Bold, fontSize = 16.sp, lineHeight = 19.sp)
+            Text(title, fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold, fontSize = 16.sp, lineHeight = 19.sp)
             Spacer(Modifier.height(1.dp))
             Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = WebSansFont,
                 fontSize = 11.sp, lineHeight = 14.sp)
@@ -279,7 +287,7 @@ internal fun AntiqueHomeScreen(
                         )
                         Text(
                             "«Аллах не ниспослал ни одной болезни, не ниспослав вместе с ней исцеления»",
-                            fontFamily = WebSerifFont,
+                            fontFamily = WebLiterataFont,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
                             lineHeight = 21.sp,
@@ -310,8 +318,8 @@ internal fun AntiqueHomeScreen(
                         verticalAlignment = Alignment.CenterVertically) {
                         AntiqueIcon(R.drawable.antique_search_detail, Modifier.size(39.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Поиск по всей книге", Modifier.weight(1f), fontFamily = WebSansFont,
-                            fontSize = 14.sp, lineHeight = 18.sp)
+                        Text("Поиск по всей книге", Modifier.weight(1f), fontFamily = WebLiterataFont,
+                            fontSize = 14.sp, lineHeight = 19.sp)
                         Spacer(Modifier.width(5.dp))
                         Icon(Icons.Default.ChevronRight, null, Modifier.size(22.dp))
                     }
@@ -324,7 +332,7 @@ internal fun AntiqueHomeScreen(
                         AntiqueIcon(R.drawable.antique_mortar_detail, Modifier.size(60.dp))
                         Spacer(Modifier.width(6.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("Как лечили / что применялось", fontFamily = WebSerifFont,
+                            Text("Как лечили / что применялось", fontFamily = WebLiterataFont,
                                 fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 18.sp)
                             Spacer(Modifier.height(3.dp))
                             Text("Состояние → средства → полный текст", fontFamily = WebSansFont,
@@ -350,7 +358,7 @@ internal fun AntiqueHomeScreen(
             if (quickCollections.isNotEmpty()) {
                 item {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Быстрые подборки", Modifier.weight(1f), fontFamily = WebSerifFont,
+                        Text("Быстрые подборки", Modifier.weight(1f), fontFamily = WebLiterataFont,
                             fontWeight = FontWeight.Bold, fontSize = 19.sp)
                         TextButton(onClick = { navigate(Route.Collections) }) { Text("Все") }
                     }
@@ -369,7 +377,7 @@ internal fun AntiqueHomeScreen(
             }
             item {
                 Column(Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Продолжить изучение", fontFamily = WebSerifFont, fontWeight = FontWeight.Bold, fontSize = 19.sp)
+                    Text("Продолжить изучение", fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold, fontSize = 19.sp)
                     // Wrap at narrower widths / larger system fonts instead of horizontal scroll.
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         OutlinedButton(onClick = { navigate(Route.Glossary) }) { Text("Словарь терминов") }
