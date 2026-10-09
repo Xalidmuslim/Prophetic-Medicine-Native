@@ -76,10 +76,10 @@ fun WebHeader(
     Surface(color = MaterialTheme.colorScheme.background, tonalElevation = 0.dp) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 62.dp).padding(horizontal = 8.dp, vertical = 5.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 51.dp).padding(horizontal = 7.dp, vertical = 1.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                     if (back != null) {
                         IconButton(onClick = back) {
                             Text("←", fontFamily = WebSansFont, fontSize = 24.sp)
@@ -94,8 +94,8 @@ fun WebHeader(
                         title,
                         fontFamily = WebModernFont,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.5.sp,
-                        lineHeight = 22.sp,
+                        fontSize = 17.5.sp,
+                        lineHeight = 21.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -103,7 +103,7 @@ fun WebHeader(
                         Text(
                             subtitle,
                             fontFamily = WebSansFont,
-                            fontSize = 11.sp,
+                            fontSize = 10.5.sp,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
@@ -111,7 +111,7 @@ fun WebHeader(
                         )
                     }
                 }
-                Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                     if (settings != null) {
                         IconButton(onClick = settings) {
                             Text("⚙", fontSize = 22.sp)
