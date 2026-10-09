@@ -40,3 +40,17 @@ shapes. These image-integrity tests are host tests, not Android UI tests.
 The baseline book data, reader, store, routes, search bridge, version and
 application ID are preserved. Actual device validation and build evidence are
 reported separately in the delivery report.
+
+## Reference refinement (2026-10-09)
+
+The refinement keeps the original content/store/navigation unchanged. New generated
+`antique_hero_refined.webp` is a full-width 3.45:1 composition; native text stays separate.
+`antique_card_frame.9.png` preserves fixed corners and shallow paper edges through
+Android nine-patch stretch strips. `antique_card_paper.webp` is a separate fiber
+texture. Seven `_detail.webp` icons retain their complete alpha contours with 24px
+transparent margins in proportionate rectangular viewports; no pictorial icon is
+replaced by a flat symbol.
+
+Reproduce exports with:
+`python3 scripts/prepare_refinement_artwork.py /path/to/refinement/raw`
+The two generated source PNGs are delivered separately from Android exports.
