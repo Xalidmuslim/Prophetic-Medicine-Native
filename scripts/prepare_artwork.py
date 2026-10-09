@@ -29,11 +29,15 @@ for name in names:
 for name, size in [('antique_hero',(1179,420)),('antique_parchment',(768,768)),('antique_button',(1100,390))]:
     im=Image.open(a.sources/(name+'.png')).convert('RGB')
     im.thumbnail(size,Image.Resampling.LANCZOS)
+    if name == 'antique_parchment':
+        pixels=np.array(im,dtype=float)
+        pixels=np.clip(np.array([233,218,200])+(pixels-pixels.mean(axis=(0,1))),0,255).astype('uint8')
+        im=Image.fromarray(pixels)
     im.save(a.output/(name+'.webp'),quality=89,method=6)
 # Independent calm paper surface, using the generated paper fibres, rather than
 # a raster card including borders, counters, or text. Its frame is native Compose.
 paper=np.array(Image.open(a.sources/'antique_parchment.png').convert('RGB').resize((512,512)),dtype=float)
-base=np.array([248,241,229])
+base=np.array([241,231,216])
 paper=np.clip(base+(paper-paper.mean(axis=(0,1)))*0.38,0,255).astype('uint8')
 Image.fromarray(paper).save(a.output/'antique_card_paper.webp',quality=90,method=6)
 

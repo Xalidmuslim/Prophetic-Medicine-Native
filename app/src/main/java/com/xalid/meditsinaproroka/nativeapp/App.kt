@@ -241,7 +241,7 @@ private fun StandaloneBottomNav(
     val background = if (dark) MaterialTheme.colorScheme.surface else AntiquePaper
     androidx.compose.material3.Surface(color = background, shadowElevation = 2.dp) {
         Row(
-            Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 4.dp, vertical = 3.dp),
+            Modifier.fillMaxWidth().navigationBarsPadding().padding(vertical = 3.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             items.forEach { item ->
@@ -250,7 +250,7 @@ private fun StandaloneBottomNav(
                     Modifier.weight(1f).heightIn(min = 56.dp)
                         .semantics { selected = item.selected }
                         .clickable(role = Role.Tab, onClick = item.action)
-                        .padding(horizontal = 1.dp, vertical = 3.dp),
+                        .padding(vertical = 3.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {

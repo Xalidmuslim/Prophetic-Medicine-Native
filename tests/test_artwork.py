@@ -6,6 +6,13 @@ ROOT = Path(__file__).resolve().parents[1]
 ART = ROOT / 'app/src/main/res/drawable-nodpi'
 ICONS = ['antique_open_book', 'antique_search', 'antique_mortar', 'antique_books', 'antique_scroll', 'antique_remedies', 'antique_bookmark', 'nav_home', 'nav_topics', 'nav_search', 'nav_bookmark', 'nav_more']
 class ArtworkTest(unittest.TestCase):
+    def test_reading_book_survives_the_shorter_icon_viewport(self):
+        with Image.open(ART/'antique_open_book.webp') as im:
+            bbox=im.getchannel('A').point(lambda a: 255 if a >= 32 else 0).getbbox()
+        # A 52×42 dp Crop viewport trims 49 px of the 512 px square at each end.
+        self.assertGreaterEqual(bbox[1],49)
+        self.assertLessEqual(bbox[3],463)
+
     def test_pictorial_icons_are_transparent_and_have_safe_margins(self):
         for name in ICONS:
             with self.subTest(asset=name):

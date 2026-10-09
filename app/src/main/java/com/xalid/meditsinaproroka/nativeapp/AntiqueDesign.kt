@@ -29,16 +29,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-internal val AntiqueParchment = Color(0xFFEFE3CF)
-internal val AntiquePaper = Color(0xFFF8F1E5)
+// Median calm paper regions sampled from the supplied reference.
+internal val AntiqueParchment = Color(0xFFE9DAC8)
+internal val AntiquePaper = Color(0xFFF1E7D8)
 internal val AntiqueInk = Color(0xFF211D19)
 internal val AntiqueMuted = Color(0xFF625D53)
 internal val AntiqueGreen = Color(0xFF305A43)
 internal val AntiqueBorder = Color(0xFFD8C8AE)
 
 @Composable
-internal fun AntiqueIcon(@DrawableRes resource: Int, modifier: Modifier, description: String? = null) {
-    Image(painterResource(resource), description, modifier, contentScale = ContentScale.Fit)
+internal fun AntiqueIcon(@DrawableRes resource: Int, modifier: Modifier, description: String? = null,
+                         scale: ContentScale = ContentScale.Fit) {
+    Image(painterResource(resource), description, modifier, contentScale = scale)
 }
 
 /** The scalable frame, text and click target are native; artwork is a separate layer. */
@@ -114,7 +116,8 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
     PaperCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(horizontal = 11.dp, vertical = 10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                AntiqueIcon(R.drawable.antique_open_book, Modifier.size(52.dp))
+                // Only transparent vertical padding is trimmed; the book keeps its scale.
+                AntiqueIcon(R.drawable.antique_open_book, Modifier.size(width = 52.dp, height = 42.dp), scale = ContentScale.Crop)
                 Spacer(Modifier.width(5.dp))
                 Text("Продолжить чтение", Modifier.weight(1f), fontFamily = WebSansFont,
                     fontWeight = FontWeight.Medium, fontSize = 12.sp, lineHeight = 16.sp)
@@ -138,6 +141,7 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
                 progress = { pct / 100f }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = if (dark) MaterialTheme.colorScheme.outline else AntiqueBorder,
+                drawStopIndicator = {},
             )
             Spacer(Modifier.height(10.dp))
             Surface(

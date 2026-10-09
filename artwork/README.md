@@ -19,6 +19,10 @@ margins. The original generated PNGs are supplied in the delivery asset ZIP;
 the navigation atlas was extracted into independent images before import.
 The existing application logo remains unchanged.
 
+Calm paper regions sampled from the reference have median RGB (233, 218, 200)
+for the page and (241, 231, 216) for the reading card. The paper exports and
+native light surfaces use these measured tones (`#E9DAC8`, `#F1E7D8`).
+
 ## Reproduce exports
 
 Host requirements: Python 3, Pillow, NumPy. Android builds do not require them.
