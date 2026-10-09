@@ -90,6 +90,25 @@ private fun SemanticReaderHeading(icon: ImageVector, label: String) {
 }
 
 
+/**
+ * Some source text blocks break in the middle of a sentence. Join only the
+ * unmistakable continuations, leaving all source blocks/IDs untouched.
+ * Section headings, Quran, hadith, enumerations and citations stay separate.
+ */
+private fun joinsUnfinishedSentence(previous: BookBlock, next: BookBlock): Boolean {
+    if (previous.type != "text" || next.type != "text") return false
+    if (attributedScholarParagraph(previous.text) || attributedScholarParagraph(next.text)) return false
+    if (numberedOpening(previous.text) != null || numberedOpening(next.text) != null) return false
+    val tail = previous.text.trimEnd().lastOrNull() ?: return false
+    if (tail in ".!?…؟؛»”\"") return false
+    val firstLetter = next.text.trimStart().firstOrNull { it.isLetter() } ?: return false
+    return firstLetter.isLowerCase()
+}
+
+private data class ReaderTextSegment(val block: BookBlock, val start: Int) {
+    val end: Int get() = start + block.text.length
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderScreen(
@@ -122,6 +141,17 @@ fun ReaderScreen(
     }
 
     val scrollState = rememberScrollState()
+    // Keep one layout coordinate for every original block so progress,
+    // anchors, bookmarks and resume positions continue to work.
+    val paragraphGroupStart = remember(chapter.id, chapter.blocks) {
+        IntArray(chapter.blocks.size) { it }.also { first ->
+            for (index in 1 until chapter.blocks.size) {
+                if (joinsUnfinishedSentence(chapter.blocks[index - 1], chapter.blocks[index])) {
+                    first[index] = first[index - 1]
+                }
+            }
+        }
+    }
     val foregroundOpacity = remember(chapter.id, animateEntrance) {
         // Almost imperceptible finish; do not reveal any intermediary surface.
         Animatable(if (animateEntrance) 0.90f else 1f)
@@ -277,10 +307,19 @@ fun ReaderScreen(
                 modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.FillBounds,
             )
-            Box(
-                Modifier.matchParentSize()
-                    .background(Color(0xFFFFFAF1).copy(alpha = 0.065f)),
-            )
+            // Keep every paper fibre exactly as in the source bitmap.
+            // User options adjust only a translucent colour wash.
+            when (store.settings.paperBackground) {
+                "original" -> Unit
+                "sage" -> Box(
+                    Modifier.matchParentSize()
+                        .background(Color(0xFFE1EBDD).copy(alpha = 0.28f)),
+                )
+                else -> Box(
+                    Modifier.matchParentSize()
+                        .background(Color(0xFFFFFAF1).copy(alpha = 0.065f)),
+                )
+            }
         }
         // The page, status-bar area and transparent toolbar stay fixed and
         // fully visible. Fade only the actual chapter content below the header.
@@ -404,11 +443,28 @@ fun ReaderScreen(
                                     }
                                 },
                         ) {
-                            ReaderBlock(
-                                chapter = chapter,
-                                block = block,
-                                store = store,
-                            )
+                            if (paragraphGroupStart[index] == index) {
+                                // Continuous sentence: one native TextView,
+                                // not multiple fake paragraphs. The originals
+                                // retain their IDs and saved annotation offsets.
+                                val end = (index + 1 until chapter.blocks.size)
+                                    .firstOrNull { paragraphGroupStart[it] != index }
+                                    ?: chapter.blocks.size
+                                if (end > index + 1) {
+                                    Box(Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
+                                        SelectableNativeText(
+                                            chapter, block, store,
+                                            mergedBlocks = chapter.blocks.subList(index, end),
+                                        )
+                                    }
+                                } else {
+                                    ReaderBlock(
+                                        chapter = chapter,
+                                        block = block,
+                                        store = store,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -906,7 +962,7 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
             }
         }
         else -> {
-            Box(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+            Box(Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
                 SelectableNativeText(chapter, block, store)
             }
         }
