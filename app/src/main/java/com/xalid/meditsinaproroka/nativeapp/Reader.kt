@@ -617,11 +617,7 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
                 SemanticReaderHeading(Icons.Outlined.FormatQuote, "ХАДИС")
                 Spacer(Modifier.height(6.dp))
                 SelectableNativeText(chapter, block, store)
-                Spacer(Modifier.height(10.dp))
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.65f),
-                    thickness = 1.dp,
-                )
+                Spacer(Modifier.height(5.dp))
                 val sourceText = if (block.hadithSources.isEmpty()) {
                     "Требует ручного тахриджа"
                 } else {
@@ -754,7 +750,7 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
             val heading = when {
                 isQuran -> "КОРАН"
                 isHistorical -> if (settings.showHistoricalLabels) "МЕДИЦИНА ЭПОХИ" else null
-                else -> "АВТОР / УЧЁНЫЙ"
+                else -> "ВЫСКАЗЫВАНИЕ"
             }
             Row(
                 modifier = Modifier.fillMaxWidth()
