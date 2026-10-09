@@ -268,16 +268,31 @@ internal fun AntiqueHomeScreen(
                         )
                         .padding(start = 13.dp, end = 12.dp, top = 11.dp, bottom = 12.dp)
                 ) {
-                    val headingSize = ((maxWidth.value + 40f) / 14.6f).coerceIn(24.5f, 28f)
-                    Column {
-                        Text("Книга, разбитая на главы,\nтемы и средства",
-                            fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
-                            fontSize = headingSize.sp, lineHeight = (headingSize * 1.06f).sp,
-                            letterSpacing = (-0.4).sp)
-                        Spacer(Modifier.height(7.dp))
-                        Text("Полный русский текст с поиском, заметками, источниками и офлайн-доступом.",
-                            color = MaterialTheme.colorScheme.onBackground, fontFamily = WebSansFont,
-                            fontSize = 12.5.sp, lineHeight = 16.sp)
+                    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Text(
+                            "Посланник Аллаха ﷺ сказал:",
+                            fontFamily = WebSansFont,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 11.5.sp,
+                            lineHeight = 16.sp,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            "«Аллах не ниспослал ни одной болезни, не ниспослав вместе с ней исцеления»",
+                            fontFamily = WebSerifFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            lineHeight = 21.sp,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                        Text(
+                            "Источник: Сахих аль-Бухари, хадис № 5678.",
+                            fontFamily = WebSansFont,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 10.5.sp,
+                            lineHeight = 14.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
                     }
                 }
             }
