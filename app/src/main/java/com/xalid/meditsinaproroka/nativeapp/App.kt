@@ -88,12 +88,19 @@ fun MedicinaApp(book: BookData, store: AppStore) {
 
     fun navigate(route: Route, push: Boolean = true) {
         if (route is Route.Reader) lastReaderChapterId = route.chapterId
-        if (push && current != route) backStack.add(current)
+        // A page turn is not a new screen in the Android Back history.
+        // Preserve the actual entry screen (contents, search, home, etc.).
+        val isPageTurn = current is Route.Reader && route is Route.Reader
+        if (push && current != route && !isPageTurn) backStack.add(current)
         current = route
     }
 
     fun goBack() {
-        if (backStack.isNotEmpty()) current = backStack.removeAt(backStack.lastIndex)
+        when {
+            backStack.isNotEmpty() -> current = backStack.removeAt(backStack.lastIndex)
+            current != Route.Home -> current = Route.Home
+            else -> activity?.finish()
+        }
     }
 
     fun root(route: Route) {
@@ -101,13 +108,7 @@ fun MedicinaApp(book: BookData, store: AppStore) {
         current = route
     }
 
-    BackHandler(enabled = true) {
-        when {
-            backStack.isNotEmpty() -> goBack()
-            current != Route.Home -> root(Route.Home)
-            else -> activity?.finish()
-        }
-    }
+    BackHandler(enabled = true) { goBack() }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -122,7 +123,23 @@ fun MedicinaApp(book: BookData, store: AppStore) {
                 val incomingChapter = targetState as? Route.Reader
                 val pageTurn = outgoingChapter != null && incomingChapter != null &&
                     outgoingChapter.chapterId != incomingChapter.chapterId
-                if (pageTurn) {
+                // No semitransparent beige layer between contents and reader.
+                // Both full-size pages slide directly over each other.
+                val fromContentsToReader =
+                    (initialState is Route.Book && targetState is Route.Reader) ||
+                        (initialState is Route.Reader && targetState is Route.Book)
+                if (fromContentsToReader) {
+                    val direction = if (initialState is Route.Book) 1 else -1
+                    slideInHorizontally(
+                        animationSpec = tween(180, easing = FastOutSlowInEasing),
+                        initialOffsetX = { distance -> direction * distance / 12 },
+                    ).togetherWith(
+                        slideOutHorizontally(
+                            animationSpec = tween(180, easing = FastOutSlowInEasing),
+                            targetOffsetX = { distance -> -direction * distance / 12 },
+                        )
+                    ).using(SizeTransform(clip = true))
+                } else if (pageTurn) {
                     val oldOrder = book.chapters.firstOrNull {
                         it.id == outgoingChapter!!.chapterId
                     }?.order ?: 0
