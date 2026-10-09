@@ -137,7 +137,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
                     contentScale = ContentScale.Fit)
                 if (!enlarged) {
                     Spacer(Modifier.width(13.dp))
-                    Column(Modifier.weight(1f).padding(end = artWidth - 12.dp)) {
+                    Column(Modifier.weight(1f).offset(y = (-5).dp).padding(end = artWidth - 12.dp)) {
                         Text(book.title, fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold,
                             fontSize = 22.sp, lineHeight = 26.sp, color = MaterialTheme.colorScheme.onBackground)
                         Spacer(Modifier.height(6.dp))
@@ -276,8 +276,8 @@ internal fun AntiqueHomeScreen(
                             "Посланник Аллаха ﷺ сказал:",
                             fontFamily = WebSansFont,
                             fontWeight = FontWeight.Normal,
-                            fontSize = 11.5.sp,
-                            lineHeight = 16.sp,
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
                         Spacer(Modifier.height(2.dp))
