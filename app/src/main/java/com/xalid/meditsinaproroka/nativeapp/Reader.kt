@@ -94,7 +94,13 @@ fun ReaderScreen(
     back: () -> Unit,
     navigate: (Route) -> Unit,
 ) {
-    val chapter = book.chapters.firstOrNull { it.id == route.chapterId }
+    // Section-only records are not reading chapters. Resolve old bookmarks or
+    // navigation pointing at an empty divider to the next real chapter.
+    val requestedChapter = book.chapters.firstOrNull { it.id == route.chapterId }
+    val chapter = if (requestedChapter != null && requestedChapter.blocks.isEmpty()) {
+        book.chapters.firstOrNull { it.order > requestedChapter.order && it.blocks.isNotEmpty() }
+            ?: requestedChapter
+    } else requestedChapter
     if (chapter == null) {
         Column(modifier.fillMaxSize()) {
             PageHeader("Глава не найдена", null, back)
@@ -247,7 +253,7 @@ fun ReaderScreen(
         }
         Column(Modifier.fillMaxSize()) {
             PageHeader(
-                chapter.title,
+                "Медицина Пророка ﷺ",
                 "Глава ${chapter.order} из ${book.chapters.size}",
                 back,
             )
@@ -262,7 +268,7 @@ fun ReaderScreen(
                         start = 16.dp,
                         end = 16.dp,
                         top = 5.dp,
-                        bottom = 74.dp,
+                        bottom = 138.dp,
                     ),
             ) {
                 Text(
@@ -274,10 +280,10 @@ fun ReaderScreen(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    chapter.title,
+                    chapter.title.removeSurrounding("[", "]"),
                     fontFamily = WebLiterataFont,
-                    fontSize = 28.sp,
-                    lineHeight = 31.sp,
+                    fontSize = (if (chapter.title.length > 60) 23 else 27).sp,
+                    lineHeight = (if (chapter.title.length > 60) 28 else 32).sp,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(8.dp))
@@ -331,11 +337,12 @@ fun ReaderScreen(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    val prev = book.chapters.firstOrNull {
-                        it.id == chapter.previousId
+                    // Skip empty book-part separators without renumbering chapters.
+                    val prev = book.chapters.lastOrNull {
+                        it.order < chapter.order && it.blocks.isNotEmpty()
                     }
                     val next = book.chapters.firstOrNull {
-                        it.id == chapter.nextId
+                        it.order > chapter.order && it.blocks.isNotEmpty()
                     }
 
                     OutlinedButton(
@@ -504,7 +511,7 @@ fun ReaderScreen(
             onClick = { settingsOpen = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 12.dp, bottom = 12.dp),
+                .padding(end = 12.dp, bottom = 100.dp),
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
         ) {
@@ -519,6 +526,24 @@ fun ReaderScreen(
     if (settingsOpen) {
         ModalBottomSheet(
             onDismissRequest = { settingsOpen = false },
+            containerColor = if (MaterialTheme.colorScheme.background.red >= 0.25f)
+                Color(0xFFF7F0E4) else MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            tonalElevation = 0.dp,
+            scrimColor = Color(0xFF181914).copy(alpha = 0.36f),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(
+                topStart = 20.dp, topEnd = 20.dp,
+            ),
+            dragHandle = {
+                Box(
+                    Modifier.padding(top = 9.dp, bottom = 6.dp)
+                        .size(width = 31.dp, height = 4.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f),
+                            androidx.compose.foundation.shape.RoundedCornerShape(50),
+                        )
+                )
+            },
         ) {
             WebReaderSettingsSheet(
                 store = store,
