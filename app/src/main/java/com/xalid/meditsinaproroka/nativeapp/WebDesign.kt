@@ -334,6 +334,18 @@ fun WebSettingsScreen(store: AppStore, modifier: Modifier, back: () -> Unit) {
             item { WebSettingsPreview(store.settings) }
 
             item {
+                WebSettingCard("Фон чтения") {
+                    PaperBackgroundChoices(store)
+                    Text(
+                        "Для светлой темы. Фактура бумаги сохраняется.",
+                        fontFamily = WebSansFont,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            item {
                 WebSettingCard("Оформление") {
                     Text(
                         "Светлая и тёмная тема общие для всех разделов «Пути сердца».",
@@ -467,6 +479,77 @@ fun WebSettingsScreen(store: AppStore, modifier: Modifier, back: () -> Unit) {
 }
 
 @Composable
+private fun PaperBackgroundChoices(store: AppStore) {
+    val selected = store.settings.paperBackground
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        listOf(
+            "original" to "Старинная",
+            "light" to "Светлая",
+            "sage" to "Шалфей",
+        ).forEach { (value, label) ->
+            Surface(
+                onClick = { store.updateSettings { it.copy(paperBackground = value) } },
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(
+                    if (selected == value) 1.6.dp else 0.8.dp,
+                    if (selected == value) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline,
+                ),
+                tonalElevation = 0.dp,
+            ) {
+                Column(
+                    modifier = Modifier.padding(5.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(
+                        Modifier.fillMaxWidth().height(57.dp)
+                            .clip(RoundedCornerShape(7.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Image(
+                            painterResource(R.drawable.reader_parchment_source),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                        when (value) {
+                            "sage" -> Box(
+                                Modifier.fillMaxSize()
+                                    .background(Color(0xFFE1EBDD).copy(alpha = 0.28f))
+                            )
+                            "light" -> Box(
+                                Modifier.fillMaxSize()
+                                    .background(Color(0xFFFFFAF1).copy(alpha = 0.065f))
+                            )
+                        }
+                        Text(
+                            "Aa",
+                            color = Color(0xFF2D2822),
+                            fontFamily = WebLiterataFont,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    Spacer(Modifier.height(5.dp))
+                    Text(
+                        label,
+                        fontFamily = WebSansFont,
+                        fontWeight = if (selected == value) FontWeight.SemiBold else FontWeight.Normal,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun WebReaderSettingsSheet(store: AppStore, onDone: () -> Unit) {
     val settings = store.settings
     androidx.compose.foundation.lazy.LazyColumn(
@@ -509,6 +592,16 @@ fun WebReaderSettingsSheet(store: AppStore, onDone: () -> Unit) {
                 )
             }
         }
+
+        item {
+            Text(
+                "Фон чтения",
+                fontFamily = WebModernFont,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 13.5.sp,
+            )
+        }
+        item { PaperBackgroundChoices(store) }
 
         item {
             Text(
