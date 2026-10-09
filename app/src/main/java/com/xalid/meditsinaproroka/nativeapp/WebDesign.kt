@@ -747,11 +747,16 @@ private fun WebChoiceGrid(
                         animationSpec = tween(170),
                         label = "readingChoiceBackground",
                     )
+                    val foregroundColor by animateColorAsState(
+                        targetValue = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        animationSpec = tween(170),
+                        label = "readingChoiceText",
+                    )
                     Surface(
                         onClick = { onSelect(value) },
                         modifier = Modifier.weight(1f),
                         color = backgroundColor,
-                        contentColor = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        contentColor = foregroundColor,
                         shape = RoundedCornerShape(9.dp),
                         border = BorderStroke(
                             1.dp,
