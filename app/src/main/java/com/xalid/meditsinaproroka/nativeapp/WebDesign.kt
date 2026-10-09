@@ -72,16 +72,19 @@ fun WebHeader(
     subtitle: String? = null,
     back: (() -> Unit)? = null,
     settings: (() -> Unit)? = null,
+    compact: Boolean = false,
 ) {
     Surface(color = MaterialTheme.colorScheme.background, tonalElevation = 0.dp) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 46.dp).padding(horizontal = 7.dp, vertical = 0.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .heightIn(min = if (compact) 40.dp else 46.dp)
+                    .padding(horizontal = 7.dp, vertical = 0.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(if (compact) 36.dp else 40.dp), contentAlignment = Alignment.Center) {
                     if (back != null) {
-                        IconButton(onClick = back) {
+                        IconButton(onClick = back, modifier = Modifier.size(if (compact) 36.dp else 40.dp)) {
                             Text("←", fontFamily = WebSansFont, fontSize = 24.sp)
                         }
                     }
@@ -94,8 +97,8 @@ fun WebHeader(
                         title,
                         fontFamily = WebModernFont,
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.5.sp,
-                        lineHeight = 20.sp,
+                        fontSize = (if (compact) 15.sp else 16.5.sp),
+                        lineHeight = (if (compact) 18.sp else 20.sp),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -111,10 +114,16 @@ fun WebHeader(
                         )
                     }
                 }
-                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(if (compact) 40.dp else 40.dp), contentAlignment = Alignment.Center) {
                     if (settings != null) {
-                        IconButton(onClick = settings) {
-                            Text("⚙", fontSize = 22.sp)
+                        IconButton(onClick = settings, modifier = Modifier.size(40.dp)) {
+                            Text(
+                                if (compact) "Aa" else "⚙",
+                                fontFamily = if (compact) WebSerifFont else WebSansFont,
+                                fontSize = if (compact) 17.sp else 22.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                         }
                     }
                 }
@@ -206,7 +215,6 @@ fun WebMoreScreen(modifier: Modifier, navigate: (Route) -> Unit) {
         MoreItem("≡", "Хадисы и источники", "Источники, указанные в тексте", Route.Hadiths),
         MoreItem("✎", "Мои заметки", "Выделения и личные записи", Route.Notes),
         MoreItem("◷", "История чтения", "Недавно открытые главы", Route.History),
-        MoreItem("↓", "Чтение без интернета", "Книга доступна без подключения к сети", Route.Offline),
         MoreItem("⚙", "Настройки чтения", "Шрифт, интервал и оформление", Route.Settings),
         MoreItem("i", "О книге", "Автор, содержание и важное примечание", Route.About),
         MoreItem("§", "Об издании", "Состав книги и указанные источники", Route.Source),
