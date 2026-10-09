@@ -1,0 +1,72 @@
+name: Native Medicine APK (copied from original module)
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout independent medicine source
+        uses: actions/checkout@v4
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Gradle 8.11.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+      - name: Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Verify complete original module source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s app/src/main/assets/book.json
+          test -s app/src/main/res/drawable/medicine_launcher.webp
+          test "$(find app/src/main/java -name '*.kt' | wc -l)" -eq 13
+          python3 - <<'PY'
+          import json
+          with open('app/src/main/assets/book.json',encoding='utf-8') as f: data=json.load(f)
+          assert len(data['chapters'])==111
+          assert len(data['topics'])==15
+          print("Book: 111 chapters, 15 topics; source preserved")
+          PY
+          grep -F 'com.xalid.meditsinaproroka.nativeapp.modulecopy' app/build.gradle
+          ! grep -R 'navigateToHeartPrayer' app/src/main/java/
+          test ! -e app/src/main/java/app/alfatiha/tafsir/MainActivity.kt
+      - name: Native Kotlin Gradle build
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Verify signed and readable Android APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          unzip -t app/build/outputs/apk/debug/app-debug.apk >/dev/null
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload APK artifact
+        id: apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: Prophetic-Medicine-Standalone-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Device-download link
+        env:
+          APK_URL: ${{ steps.apk.outputs.artifact-url }}
+        run: echo "[Download independent native Medicine APK]($APK_URL)" >> "$GITHUB_STEP_SUMMARY"
