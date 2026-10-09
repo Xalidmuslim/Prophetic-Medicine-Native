@@ -79,13 +79,13 @@ private val LightScheme = lightColorScheme(
 )
 
 private val WebTypography = Typography(
-    displayLarge = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 40.sp, lineHeight = 44.sp),
-    displayMedium = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 38.sp),
-    displaySmall = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 29.sp, lineHeight = 33.sp),
-    headlineLarge = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 32.sp),
-    headlineMedium = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, lineHeight = 28.sp),
-    headlineSmall = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 24.sp),
-    titleLarge = TextStyle(fontFamily = WebModernFont, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, lineHeight = 23.sp),
+    displayLarge = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 40.sp, lineHeight = 44.sp),
+    displayMedium = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 34.sp, lineHeight = 38.sp),
+    displaySmall = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 29.sp, lineHeight = 33.sp),
+    headlineLarge = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 28.sp, lineHeight = 32.sp),
+    headlineMedium = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 24.sp, lineHeight = 28.sp),
+    headlineSmall = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 24.sp),
+    titleLarge = TextStyle(fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, lineHeight = 23.sp),
     titleMedium = TextStyle(fontFamily = WebSansFont, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 21.sp),
     titleSmall = TextStyle(fontFamily = WebSansFont, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, lineHeight = 19.sp),
     bodyLarge = TextStyle(fontFamily = WebSansFont, fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = 25.sp),
