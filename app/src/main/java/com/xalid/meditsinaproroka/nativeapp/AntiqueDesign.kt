@@ -127,7 +127,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
                 .padding(start = 14.dp, end = 12.dp, top = 7.dp, bottom = 9.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(painterResource(R.drawable.medicine_launcher), "Настройки чтения",
+                Image(painterResource(R.drawable.medicine_launcher_book), "Настройки чтения",
                     Modifier.size(70.dp).clip(RoundedCornerShape(15.dp)).clickable(role = Role.Button, onClick = onSettings),
                     contentScale = ContentScale.Fit)
                 if (!enlarged) {
