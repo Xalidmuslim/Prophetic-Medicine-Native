@@ -182,7 +182,7 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
 private fun AntiqueQuickCard(@DrawableRes icon: Int, title: String, subtitle: String,
                              modifier: Modifier, onClick: () -> Unit) {
     PaperCard(modifier.fillMaxHeight().heightIn(min = 88.dp), onClick) {
-        Column(Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 2.dp, bottom = 7.dp)) {
+        Column(Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 0.dp, bottom = 3.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 AntiqueIcon(icon, Modifier.size(width = 70.dp, height = 48.dp))
                 Spacer(Modifier.weight(1f))
@@ -234,7 +234,7 @@ internal fun AntiqueHomeScreen(
                 contentScale = ContentScale.Crop, alpha = 0.35f)
         }
         LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), contentPadding = PaddingValues(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            verticalArrangement = Arrangement.spacedBy(6.dp)) {
             item { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
             item {
                 BoxWithConstraints(Modifier.fillMaxWidth().padding(start = 21.dp, end = 19.dp, top = 0.dp, bottom = 2.dp)) {
