@@ -123,17 +123,17 @@ fun ReaderScreen(
 
     val scrollState = rememberScrollState()
     val foregroundOpacity = remember(chapter.id, animateEntrance) {
-        Animatable(if (animateEntrance) 0f else 1f)
+        // Almost imperceptible finish; do not reveal any intermediary surface.
+        Animatable(if (animateEntrance) 0.90f else 1f)
     }
     LaunchedEffect(chapter.id, animateEntrance) {
         if (animateEntrance) {
             foregroundOpacity.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing),
+                animationSpec = tween(durationMillis = 110, easing = FastOutSlowInEasing),
             )
         }
     }
-    val backAction by rememberUpdatedState(back)
     // Chapter turns follow source order and ignore empty book-section headings.
     val previousChapter = remember(book, chapter.id) {
         book.chapters.lastOrNull { it.order < chapter.order && it.blocks.isNotEmpty() }
@@ -301,45 +301,44 @@ fun ReaderScreen(
                     .fillMaxWidth()
                     .graphicsLayer { alpha = foregroundOpacity.value }
                     .clipToBounds()
-                    // Android owns swipes starting at either system edge.
-                    // Interior swipe left turns the page; interior swipe right
-                    // uses exactly the same Back callback as the toolbar / OS.
-                    .pointerInput(chapter.id, followingChapter?.id) {
+                    // Gestures in the reading body turn CHAPTERS, never
+                    // navigate back to the contents. Android keeps its native
+                    // Back gesture at the left/right screen edges.
+                    .pointerInput(chapter.id, previousChapter?.id, followingChapter?.id) {
                         var horizontalDistance = 0f
-                        var systemEdgeStarted = false
+                        var startedAtSystemEdge = false
                         val pageThresholdPx = 76.dp.toPx()
                         val reservedSystemEdgePx = 38.dp.toPx()
                         detectHorizontalDragGestures(
                             onDragStart = { point ->
                                 horizontalDistance = 0f
-                                systemEdgeStarted =
+                                startedAtSystemEdge =
                                     point.x < reservedSystemEdgePx ||
                                         point.x > size.width - reservedSystemEdgePx
                             },
-                            onHorizontalDrag = { change, distance ->
-                                if (!systemEdgeStarted) {
-                                    horizontalDistance += distance
-                                    // Do not consume Android's rightward back
-                                    // gesture; forward page turns are handled
-                                    // only once a real horizontal drag is seen.
-                                    if (distance < 0f) change.consume()
+                            onHorizontalDrag = { change, dragAmount ->
+                                if (!startedAtSystemEdge) {
+                                    horizontalDistance += dragAmount
+                                    change.consume()
                                 }
                             },
                             onDragCancel = {
                                 horizontalDistance = 0f
-                                systemEdgeStarted = false
+                                startedAtSystemEdge = false
                             },
                             onDragEnd = {
                                 val distance = horizontalDistance
-                                val fromSystemEdge = systemEdgeStarted
+                                val isSystemEdge = startedAtSystemEdge
                                 horizontalDistance = 0f
-                                systemEdgeStarted = false
-                                if (!fromSystemEdge) {
-                                    when {
-                                        distance < -pageThresholdPx &&
-                                            followingChapter != null ->
-                                            navigate(Route.Reader(followingChapter.id))
-                                        distance > pageThresholdPx -> backAction()
+                                startedAtSystemEdge = false
+                                if (!isSystemEdge) {
+                                    val destination = when {
+                                        distance <= -pageThresholdPx -> followingChapter
+                                        distance >= pageThresholdPx -> previousChapter
+                                        else -> null
+                                    }
+                                    if (destination != null) {
+                                        navigate(Route.Reader(destination.id))
                                     }
                                 }
                             },
