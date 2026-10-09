@@ -21,6 +21,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -35,6 +36,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.input.pointer.consume
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -115,6 +118,13 @@ fun ReaderScreen(
     }
 
     val scrollState = rememberScrollState()
+    // Chapter turns follow source order and ignore empty book-section headings.
+    val previousChapter = remember(book, chapter.id) {
+        book.chapters.lastOrNull { it.order < chapter.order && it.blocks.isNotEmpty() }
+    }
+    val followingChapter = remember(book, chapter.id) {
+        book.chapters.firstOrNull { it.order > chapter.order && it.blocks.isNotEmpty() }
+    }
     var settingsOpen by remember { mutableStateOf(false) }
     var bookmarkFolderOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -265,6 +275,30 @@ fun ReaderScreen(
                     .weight(1f)
                     .fillMaxWidth()
                     .clipToBounds()
+                    // Horizontal gestures turn chapters. Vertical gestures remain
+                    // available to the normal scroll container. No swipe overlay
+                    // is placed over text selection or reading controls.
+                    .pointerInput(chapter.id, previousChapter?.id, followingChapter?.id) {
+                        var horizontalDistance = 0f
+                        val changeThresholdPx = 76.dp.toPx()
+                        detectHorizontalDragGestures(
+                            onDragStart = { horizontalDistance = 0f },
+                            onHorizontalDrag = { change, delta ->
+                                horizontalDistance += delta
+                                change.consume()
+                            },
+                            onDragCancel = { horizontalDistance = 0f },
+                            onDragEnd = {
+                                val destination = when {
+                                    horizontalDistance <= -changeThresholdPx -> followingChapter
+                                    horizontalDistance >= changeThresholdPx -> previousChapter
+                                    else -> null
+                                }
+                                horizontalDistance = 0f
+                                if (destination != null) navigate(Route.Reader(destination.id))
+                            },
+                        )
+                    }
                     .verticalScroll(scrollState)
                     .padding(
                         start = 16.dp,
@@ -339,13 +373,8 @@ fun ReaderScreen(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    // Skip empty book-part separators without renumbering chapters.
-                    val prev = book.chapters.lastOrNull {
-                        it.order < chapter.order && it.blocks.isNotEmpty()
-                    }
-                    val next = book.chapters.firstOrNull {
-                        it.order > chapter.order && it.blocks.isNotEmpty()
-                    }
+                    val prev = previousChapter
+                    val next = followingChapter
 
                     OutlinedButton(
                         onClick = {
