@@ -25,8 +25,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -193,25 +191,13 @@ fun ReaderScreen(
 
     Box(modifier.fillMaxSize()) {
         if (MaterialTheme.colorScheme.background.red >= 0.25f) {
-            // Restrained old-paper effect: soft beige centre, gently aged edges,
-            // no heavy photographs beneath long-form reading text.
-            Box(Modifier.matchParentSize().background(Color(0xFFF9F3E9)))
+            // Use the exact supplied antique-page image. No artificial tint,
+            // repeated pattern, gradient or overlay is added to the reading page.
             Image(
-                painter = painterResource(R.drawable.antique_parchment),
+                painter = painterResource(R.drawable.reader_parchment_source),
                 contentDescription = null,
                 modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop,
-                alpha = 0.11f,
-            )
-            Box(
-                Modifier.matchParentSize().background(
-                    Brush.horizontalGradient(
-                        0f to Color(0xFFDBC6A9).copy(alpha = 0.22f),
-                        0.11f to Color(0xFFFFFAF2).copy(alpha = 0.66f),
-                        0.89f to Color(0xFFFFFAF2).copy(alpha = 0.66f),
-                        1f to Color(0xFFDBC6A9).copy(alpha = 0.22f),
-                    )
-                )
+                contentScale = ContentScale.FillBounds,
             )
         }
         Column(Modifier.fillMaxSize()) {
