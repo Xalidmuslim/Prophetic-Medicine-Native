@@ -118,19 +118,46 @@ fun MedicinaApp(book: BookData, store: AppStore) {
             modifier = Modifier.fillMaxSize(),
             targetState = current,
             transitionSpec = {
-                (
-                    fadeIn(animationSpec = tween(205, easing = FastOutSlowInEasing)) +
-                        slideInHorizontally(
-                            animationSpec = tween(225, easing = FastOutSlowInEasing),
-                            initialOffsetX = { it / 40 },
-                        )
-                ).togetherWith(
-                    fadeOut(animationSpec = tween(155, easing = FastOutSlowInEasing)) +
-                        slideOutHorizontally(
-                            animationSpec = tween(175, easing = FastOutSlowInEasing),
-                            targetOffsetX = { -it / 55 },
-                        )
-                ).using(SizeTransform(clip = false))
+                val outgoingChapter = initialState as? Route.Reader
+                val incomingChapter = targetState as? Route.Reader
+                val pageTurn = outgoingChapter != null && incomingChapter != null &&
+                    outgoingChapter.chapterId != incomingChapter.chapterId
+                if (pageTurn) {
+                    val oldOrder = book.chapters.firstOrNull {
+                        it.id == outgoingChapter!!.chapterId
+                    }?.order ?: 0
+                    val newOrder = book.chapters.firstOrNull {
+                        it.id == incomingChapter!!.chapterId
+                    }?.order ?: 0
+                    val direction = if (newOrder >= oldOrder) 1 else -1
+                    (
+                        fadeIn(animationSpec = tween(205, easing = FastOutSlowInEasing)) +
+                            slideInHorizontally(
+                                animationSpec = tween(245, easing = FastOutSlowInEasing),
+                                initialOffsetX = { distance -> direction * distance / 5 },
+                            )
+                    ).togetherWith(
+                        fadeOut(animationSpec = tween(175, easing = FastOutSlowInEasing)) +
+                            slideOutHorizontally(
+                                animationSpec = tween(235, easing = FastOutSlowInEasing),
+                                targetOffsetX = { distance -> -direction * distance / 5 },
+                            )
+                    ).using(SizeTransform(clip = false))
+                } else {
+                    (
+                        fadeIn(animationSpec = tween(205, easing = FastOutSlowInEasing)) +
+                            slideInHorizontally(
+                                animationSpec = tween(225, easing = FastOutSlowInEasing),
+                                initialOffsetX = { it / 40 },
+                            )
+                    ).togetherWith(
+                        fadeOut(animationSpec = tween(155, easing = FastOutSlowInEasing)) +
+                            slideOutHorizontally(
+                                animationSpec = tween(175, easing = FastOutSlowInEasing),
+                                targetOffsetX = { -it / 55 },
+                            )
+                    ).using(SizeTransform(clip = false))
+                }
             },
             label = "sectionTransition",
         ) { route ->
