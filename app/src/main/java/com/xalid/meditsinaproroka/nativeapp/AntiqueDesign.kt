@@ -102,20 +102,22 @@ private fun PaperCard(
 private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
     val enlarged = LocalDensity.current.fontScale > 1.15f
-    BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 130.dp)) {
+    // Restore the taller home-book masthead. The earlier 130dp setting was
+    // intended for the reading toolbar, not this illustrated home header.
+    BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 192.dp)) {
         val artWidth = maxWidth * 0.34f
         val heroHeight = maxWidth / 3.45f
         if (!dark) {
             // Image begins at y=0 so Android's transparent status bar belongs to the same paper.
             Image(painterResource(R.drawable.antique_hero_refined), null,
-                Modifier.fillMaxWidth().height(132.dp).align(Alignment.TopCenter),
+                Modifier.fillMaxWidth().height(160.dp).align(Alignment.TopCenter),
                 contentScale = ContentScale.Crop)
             Box(
-                Modifier.fillMaxWidth().height(132.dp).align(Alignment.TopCenter)
+                Modifier.fillMaxWidth().height(160.dp).align(Alignment.TopCenter)
                     .background(Color(0xFFF5EADB).copy(alpha = 0.32f))
             )
             Box(
-                Modifier.fillMaxWidth().height(132.dp).align(Alignment.TopCenter)
+                Modifier.fillMaxWidth().height(160.dp).align(Alignment.TopCenter)
                     .background(
                         Brush.verticalGradient(
                             0f to Color(0xFFF7EBDD).copy(alpha = 0.12f),
@@ -127,7 +129,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
         }
         Column(
             Modifier.fillMaxWidth().statusBarsPadding()
-                .padding(start = 14.dp, end = 12.dp, top = 7.dp, bottom = 9.dp)
+                .padding(start = 14.dp, end = 12.dp, top = 9.dp, bottom = 12.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(painterResource(R.drawable.medicine_launcher_book), "Настройки чтения",
