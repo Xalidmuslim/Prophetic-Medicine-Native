@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -700,23 +702,55 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
         return
     }
 
-    val isSpecial = block.type == "quran" || block.type == "historical_note"
+    val isQuran = block.type == "quran"
+    val isSpecial = isQuran || block.type == "historical_note"
     if (isSpecial) {
+        // Only Quran blocks receive the sage-paper treatment. Preserve the
+        // original text, the user's font settings and selection/annotation logic.
+        val isLight = MaterialTheme.colorScheme.background.red >= 0.25f
+        val paperColor = if (isLight) Color(0xFFD8E5D5) else Color(0xFF2B3830)
+        val paperBorder = if (isLight) Color(0xFFA6BAA5) else Color(0xFF627967)
+        val quranHeading = if (isLight) Color(0xFF3F624B) else Color(0xFFB9D4BF)
+        val quranInk = if (isLight) Color(0xFF243029) else Color(0xFFE8EDE5)
+
         Card(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 5.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isQuran) paperColor else MaterialTheme.colorScheme.surfaceVariant,
+            ),
+            border = if (isQuran) BorderStroke(1.dp, paperBorder) else null,
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         ) {
-            Column(Modifier.padding(13.dp)) {
+            Column(Modifier.padding(if (isQuran) 16.dp else 13.dp)) {
                 if (label != null) {
                     Text(
                         label.uppercase(),
-                        color = MaterialTheme.colorScheme.primary,
+                        color = if (isQuran) quranHeading else MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = if (isQuran) 0.8.sp else 0.sp,
                     )
-                    Spacer(Modifier.height(6.dp))
+                    if (isQuran) {
+                        Spacer(Modifier.height(8.dp))
+                        HorizontalDivider(
+                            modifier = Modifier.width(44.dp),
+                            thickness = 1.dp,
+                            color = paperBorder,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    } else {
+                        Spacer(Modifier.height(6.dp))
+                    }
                 }
-                SelectableNativeText(chapter, block, store)
+                SelectableNativeText(
+                    chapter,
+                    block,
+                    store,
+                    textColorOverride = if (isQuran) quranInk else null,
+                )
             }
         }
     } else {
@@ -727,9 +761,14 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
 }
 
 @Composable
-private fun SelectableNativeText(chapter: Chapter, block: BookBlock, store: AppStore) {
+private fun SelectableNativeText(
+    chapter: Chapter,
+    block: BookBlock,
+    store: AppStore,
+    textColorOverride: Color? = null,
+) {
     val settings = store.settings
-    val textColor = MaterialTheme.colorScheme.onBackground.toArgb()
+    val textColor = (textColorOverride ?: MaterialTheme.colorScheme.onBackground).toArgb()
     val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f).toArgb()
     val highlights = store.highlightsFor(chapter.id, block.id)
     val notes = store.notesFor(chapter.id, block.id)
