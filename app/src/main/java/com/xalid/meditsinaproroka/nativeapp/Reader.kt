@@ -117,6 +117,7 @@ fun ReaderScreen(
     }
 
     val scrollState = rememberScrollState()
+    val backAction by rememberUpdatedState(back)
     // Chapter turns follow source order and ignore empty book-section headings.
     val previousChapter = remember(book, chapter.id) {
         book.chapters.lastOrNull { it.order < chapter.order && it.blocks.isNotEmpty() }
@@ -274,27 +275,47 @@ fun ReaderScreen(
                     .weight(1f)
                     .fillMaxWidth()
                     .clipToBounds()
-                    // Horizontal gestures turn chapters. Vertical gestures remain
-                    // available to the normal scroll container. No swipe overlay
-                    // is placed over text selection or reading controls.
-                    .pointerInput(chapter.id, previousChapter?.id, followingChapter?.id) {
+                    // Android owns swipes starting at either system edge.
+                    // Interior swipe left turns the page; interior swipe right
+                    // uses exactly the same Back callback as the toolbar / OS.
+                    .pointerInput(chapter.id, followingChapter?.id) {
                         var horizontalDistance = 0f
-                        val changeThresholdPx = 76.dp.toPx()
+                        var systemEdgeStarted = false
+                        val pageThresholdPx = 76.dp.toPx()
+                        val reservedSystemEdgePx = 38.dp.toPx()
                         detectHorizontalDragGestures(
-                            onDragStart = { horizontalDistance = 0f },
-                            onHorizontalDrag = { change, delta ->
-                                horizontalDistance += delta
-                                change.consume()
-                            },
-                            onDragCancel = { horizontalDistance = 0f },
-                            onDragEnd = {
-                                val destination = when {
-                                    horizontalDistance <= -changeThresholdPx -> followingChapter
-                                    horizontalDistance >= changeThresholdPx -> previousChapter
-                                    else -> null
-                                }
+                            onDragStart = { point ->
                                 horizontalDistance = 0f
-                                if (destination != null) navigate(Route.Reader(destination.id))
+                                systemEdgeStarted =
+                                    point.x < reservedSystemEdgePx ||
+                                        point.x > size.width - reservedSystemEdgePx
+                            },
+                            onHorizontalDrag = { change, distance ->
+                                if (!systemEdgeStarted) {
+                                    horizontalDistance += distance
+                                    // Do not consume Android's rightward back
+                                    // gesture; forward page turns are handled
+                                    // only once a real horizontal drag is seen.
+                                    if (distance < 0f) change.consume()
+                                }
+                            },
+                            onDragCancel = {
+                                horizontalDistance = 0f
+                                systemEdgeStarted = false
+                            },
+                            onDragEnd = {
+                                val distance = horizontalDistance
+                                val fromSystemEdge = systemEdgeStarted
+                                horizontalDistance = 0f
+                                systemEdgeStarted = false
+                                if (!fromSystemEdge) {
+                                    when {
+                                        distance < -pageThresholdPx &&
+                                            followingChapter != null ->
+                                            navigate(Route.Reader(followingChapter.id))
+                                        distance > pageThresholdPx -> backAction()
+                                    }
+                                }
                             },
                         )
                     }
