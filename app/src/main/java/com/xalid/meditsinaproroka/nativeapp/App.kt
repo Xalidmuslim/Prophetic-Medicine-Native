@@ -107,20 +107,11 @@ fun MedicinaApp(book: BookData, store: AppStore) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
-        bottomBar = {
-            StandaloneBottomNav(
-                current = current,
-                onHome = { root(Route.Home) },
-                onTopics = { root(Route.Topics) },
-                onSearch = { root(Route.Search) },
-                onBookmarks = { root(Route.Bookmarks) },
-                onMore = { root(Route.More) },
-            )
-        },
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
     ) { insets ->
-        val modifier = Modifier.padding(insets)
-        AnimatedContent(
+        Box(Modifier.fillMaxSize().padding(insets)) {
+            AnimatedContent(
+            modifier = Modifier.fillMaxSize(),
             targetState = current,
             transitionSpec = {
                 (
@@ -133,7 +124,7 @@ fun MedicinaApp(book: BookData, store: AppStore) {
             },
             label = "sectionTransition",
         ) { route ->
-            val screenModifier = if (route == Route.Home) modifier else modifier.statusBarsPadding()
+            val screenModifier = if (route == Route.Home) Modifier.fillMaxSize() else Modifier.fillMaxSize().statusBarsPadding()
             screenStateHolder.SaveableStateProvider(routeStateKey(route)) {
                 when (route) {
                 Route.Home -> WebHomeScreen(
@@ -193,6 +184,16 @@ fun MedicinaApp(book: BookData, store: AppStore) {
                 }
             }
         }
+            StandaloneBottomNav(
+                current = current,
+                onHome = { root(Route.Home) },
+                onTopics = { root(Route.Topics) },
+                onSearch = { root(Route.Search) },
+                onBookmarks = { root(Route.Bookmarks) },
+                onMore = { root(Route.More) },
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
+        }
     }
 }
 
@@ -229,6 +230,7 @@ private fun StandaloneBottomNav(
     onSearch: () -> Unit,
     onBookmarks: () -> Unit,
     onMore: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     data class NavItem(val label: String, val icon: Int, val selected: Boolean, val action: () -> Unit)
     val items = listOf(
@@ -240,20 +242,7 @@ private fun StandaloneBottomNav(
     )
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
     val panelShape = RoundedCornerShape(16.dp)
-    // Inset navigation panel above the same antique book paper, with original icons.
-    Box(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background)) {
-        if (!dark) {
-            Image(
-                painter = painterResource(
-                    if (current is Route.Reader) R.drawable.reader_parchment_source
-                    else R.drawable.antique_parchment
-                ),
-                contentDescription = null,
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop,
-                alpha = 0.80f,
-            )
-        }
+    Box(modifier.fillMaxWidth()) {
         Box(
             Modifier.fillMaxWidth().navigationBarsPadding()
                 .padding(start = 13.dp, end = 13.dp, top = 4.dp, bottom = 4.dp),
