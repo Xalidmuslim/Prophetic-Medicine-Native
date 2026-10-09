@@ -282,21 +282,24 @@ fun ReaderScreen(
                     .background(Color(0xFFFFFAF1).copy(alpha = 0.065f)),
             )
         }
-        // Animate only native text/controls; the page texture itself never
-        // slides, cross-fades or displays a temporary intermediary surface.
-        Column(Modifier.fillMaxSize().graphicsLayer { alpha = foregroundOpacity.value }) {
-            PageHeader(
-                "Медицина Пророка ﷺ",
-                "Глава ${chapter.order} из ${book.chapters.size}",
-                back,
-                settings = { settingsOpen = true },
-                compact = true,
-            )
+        // The page, status-bar area and transparent toolbar stay fixed and
+        // fully visible. Fade only the actual chapter content below the header.
+        Column(Modifier.fillMaxSize()) {
+            Box(Modifier.statusBarsPadding()) {
+                PageHeader(
+                    "Медицина Пророка ﷺ",
+                    "Глава ${chapter.order} из ${book.chapters.size}",
+                    back,
+                    settings = { settingsOpen = true },
+                    compact = true,
+                )
+            }
 
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .graphicsLayer { alpha = foregroundOpacity.value }
                     .clipToBounds()
                     // Android owns swipes starting at either system edge.
                     // Interior swipe left turns the page; interior swipe right
