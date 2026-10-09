@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -42,6 +43,45 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
+
+/** Semantic decoration only; chapter text and stored selection indices are unchanged. */
+private fun attributedScholarParagraph(text: String): Boolean {
+    val start = text.trimStart().lowercase()
+    val scholar = listOf("ибн ", "абу ", "аль-", "ал-", "муджахид ", "хасан ", "шейх ").any(start::startsWith)
+    if (!scholar) return false
+    val prefix = start.take(135)
+    val attribution = Regex("""\b(сказал|говорил|писал|объяснял|отмечал|считает|полагал|утверждал|подчёркивал)\b""").containsMatchIn(prefix)
+    val chain = Regex("""\b(передал|передаёт|приводит|сообщил|передавал)\b""").containsMatchIn(prefix)
+    return attribution && !chain
+}
+
+private fun numberedOpening(text: String): Int? {
+    val digits = Regex("""^\s*([1-9])[.)]\s""").find(text)
+    if (digits != null) return digits.groupValues[1].toIntOrNull()
+    val words = Regex("""^\s*(Первое|Второе|Третье|Четвёртое|Пятое|Первый|Второй|Третий|Четвёртый)(?=[:.\s—–-])""", RegexOption.IGNORE_CASE)
+        .find(text)?.groupValues?.get(1)?.lowercase() ?: return null
+    return when (words) {
+        "первое", "первый" -> 1
+        "второе", "второй" -> 2
+        "третье", "третий" -> 3
+        "четвёртое", "четвёртый" -> 4
+        "пятое" -> 5
+        else -> null
+    }
+}
+
+@Composable
+private fun SemanticReaderHeading(icon: ImageVector, label: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(17.dp))
+        Text(
+            label, color = MaterialTheme.colorScheme.primary,
+            fontFamily = WebSansFont, fontSize = 12.sp,
+            lineHeight = 15.sp, fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -220,8 +260,8 @@ fun ReaderScreen(
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 8.dp,
-                        bottom = 104.dp,
+                        top = 5.dp,
+                        bottom = 74.dp,
                     ),
             ) {
                 Text(
@@ -231,7 +271,7 @@ fun ReaderScreen(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 12.sp,
                 )
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     chapter.title,
                     fontFamily = WebLiterataFont,
@@ -239,7 +279,7 @@ fun ReaderScreen(
                     lineHeight = 31.sp,
                     fontWeight = FontWeight.SemiBold,
                 )
-                Spacer(Modifier.height(11.dp))
+                Spacer(Modifier.height(8.dp))
                 HorizontalDivider(
                     color = MaterialTheme.colorScheme.outline
                         .copy(alpha = 0.72f)
@@ -574,14 +614,8 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
             )
             Spacer(Modifier.width(13.dp))
             Column(Modifier.weight(1f)) {
-                Text(
-                    "ХАДИС",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.1.sp,
-                )
-                Spacer(Modifier.height(8.dp))
+                SemanticReaderHeading(Icons.Outlined.FormatQuote, "ХАДИС")
+                Spacer(Modifier.height(6.dp))
                 SelectableNativeText(chapter, block, store)
                 Spacer(Modifier.height(10.dp))
                 HorizontalDivider(
@@ -706,84 +740,91 @@ private fun ReaderBlock(chapter: Chapter, block: BookBlock, store: AppStore) {
     }
 
     val isQuran = block.type == "quran"
-    val isSpecial = isQuran || block.type == "historical_note"
-    if (isSpecial) {
-        val light = MaterialTheme.colorScheme.background.red >= 0.25f
-        val sagePaper = if (light) Color(0xFFD8E5D5) else Color(0xFF2B3830)
-        val sageBorder = if (light) Color(0xFFA6BAA5) else Color(0xFF667D6B)
-        val sageAccent = if (light) Color(0xFF3F624B) else Color(0xFFB9D4BF)
-        val sageInk = if (light) Color(0xFF243029) else Color(0xFFE8EDE5)
+    val isHistorical = block.type == "historical_note"
+    val isScholar = block.type == "text" && attributedScholarParagraph(block.text)
+    val listNumber = if (block.type == "text" && !isScholar) numberedOpening(block.text) else null
 
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(17.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (isQuran) sagePaper else MaterialTheme.colorScheme.surfaceVariant,
-            ),
-            border = if (isQuran) BorderStroke(1.dp, sageBorder) else null,
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        ) {
-            Box(Modifier.fillMaxWidth()) {
-                if (isQuran && light) {
-                    Image(
-                        painter = painterResource(R.drawable.antique_card_paper),
-                        contentDescription = null,
-                        modifier = Modifier.matchParentSize(),
-                        contentScale = ContentScale.Crop,
-                        alpha = 0.17f,
-                    )
-                }
-                if (isQuran) {
-                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(13.dp)) {
-                        // Identical left-side vertical cue to the hadith style.
-                        Box(
-                            Modifier.width(3.dp).fillMaxHeight()
-                                .background(sageAccent.copy(alpha = 0.72f))
+    when {
+        isQuran || isHistorical || isScholar -> {
+            val icon = when {
+                isQuran -> Icons.Outlined.MenuBook
+                isHistorical -> Icons.Outlined.MedicalServices
+                else -> Icons.Outlined.PersonOutline
+            }
+            val heading = when {
+                isQuran -> "КОРАН"
+                isHistorical -> if (settings.showHistoricalLabels) "МЕДИЦИНА ЭПОХИ" else null
+                else -> "АВТОР / УЧЁНЫЙ"
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .height(IntrinsicSize.Min)
+                    .padding(vertical = 6.dp),
+            ) {
+                Box(
+                    Modifier.width(3.dp).fillMaxHeight()
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.92f))
+                )
+                Spacer(Modifier.width(13.dp))
+                Column(Modifier.weight(1f)) {
+                    if (heading != null) {
+                        SemanticReaderHeading(icon, heading)
+                        Spacer(Modifier.height(6.dp))
+                    } else {
+                        Icon(
+                            icon, contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp),
                         )
-                        Spacer(Modifier.width(13.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                "КОРАН",
-                                color = sageAccent,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                letterSpacing = 0.7.sp,
-                            )
-                            Spacer(Modifier.height(7.dp))
-                            SelectableNativeText(
-                                chapter, block, store, textColorOverride = sageInk,
-                            )
-                            block.quranReference?.takeIf { it.isNotBlank() }?.let { reference ->
-                                Spacer(Modifier.height(8.dp))
-                                Text(
-                                    reference.trim(),
-                                    color = sageAccent,
-                                    fontFamily = WebSansFont,
-                                    fontSize = 11.sp,
-                                    lineHeight = 15.sp,
-                                )
-                            }
-                        }
+                        Spacer(Modifier.height(5.dp))
                     }
-                } else {
-                    Column(Modifier.padding(13.dp)) {
-                        if (label != null) {
+                    SelectableNativeText(chapter, block, store)
+                    if (isQuran) {
+                        block.quranReference?.takeIf { it.isNotBlank() }?.let { reference ->
+                            Spacer(Modifier.height(5.dp))
                             Text(
-                                label.uppercase(),
+                                reference.trim(),
                                 color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
+                                fontFamily = WebSansFont,
+                                fontSize = 11.sp,
+                                lineHeight = 15.sp,
                             )
-                            Spacer(Modifier.height(6.dp))
                         }
-                        SelectableNativeText(chapter, block, store)
                     }
                 }
             }
         }
-    } else {
-        Box(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
-            SelectableNativeText(chapter, block, store)
+        listNumber != null -> {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Box(
+                    Modifier.size(34.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                            androidx.compose.foundation.shape.CircleShape,
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        listNumber.toString(),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontFamily = WebSansFont,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Box(Modifier.weight(1f)) {
+                    SelectableNativeText(chapter, block, store)
+                }
+            }
+        }
+        else -> {
+            Box(Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+                SelectableNativeText(chapter, block, store)
+            }
         }
     }
 }
