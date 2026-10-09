@@ -85,11 +85,17 @@ fun MedicinaApp(book: BookData, store: AppStore) {
     var bookmarkFolder by remember { mutableStateOf("Все") }
     var lastReaderChapterId by remember { mutableStateOf<String?>(null) }
     var contentsRequest by remember { mutableIntStateOf(0) }
+    // Only the foreground of chapters opened from the contents fades in.
+    // The parchment itself is always rendered fully opaque on first frame.
+    var animateChapterEntry by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val activity = context as? Activity
 
     fun navigate(route: Route, push: Boolean = true) {
-        if (route is Route.Reader) lastReaderChapterId = route.chapterId
+        if (route is Route.Reader) {
+            animateChapterEntry = current is Route.Book
+            lastReaderChapterId = route.chapterId
+        }
         // A page turn is not a new screen in the Android Back history.
         // Preserve the actual entry screen (contents, search, home, etc.).
         val isPageTurn = current is Route.Reader && route is Route.Reader
@@ -230,7 +236,10 @@ fun MedicinaApp(book: BookData, store: AppStore) {
                 is Route.CollectionDetail -> CollectionDetailScreen(book, route.id, screenModifier, ::goBack) {
                     navigate(Route.Reader(it))
                 }
-                is Route.Reader -> ReaderScreen(book, store, route, screenModifier, ::goBack) { next ->
+                is Route.Reader -> ReaderScreen(
+                    book, store, route, screenModifier, ::goBack,
+                    animateEntrance = animateChapterEntry,
+                ) { next ->
                     navigate(next)
                 }
                 }
