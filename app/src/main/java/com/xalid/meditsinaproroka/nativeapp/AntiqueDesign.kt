@@ -137,7 +137,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
                     Spacer(Modifier.width(13.dp))
                     Column(Modifier.weight(1f).padding(end = artWidth - 12.dp)) {
                         Text(book.title, fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold,
-                            fontSize = 23.sp, lineHeight = 22.sp, color = MaterialTheme.colorScheme.onBackground)
+                            fontSize = 22.sp, lineHeight = 26.sp, color = MaterialTheme.colorScheme.onBackground)
                         Spacer(Modifier.height(6.dp))
                         Text(book.author, fontFamily = WebSansFont, fontSize = 10.5.sp, lineHeight = 13.sp,
                             color = MaterialTheme.colorScheme.onBackground)
@@ -186,7 +186,7 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
             }
             Spacer(Modifier.height(2.dp))
             Text(title, fontFamily = WebLiterataFont, fontWeight = FontWeight.SemiBold,
-                fontSize = 16.5.sp, lineHeight = 20.sp)
+                fontSize = 16.5.sp, lineHeight = 22.sp)
             Spacer(Modifier.height(9.dp))
             LinearProgressIndicator(
                 progress = { animatedProgress }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
@@ -333,7 +333,7 @@ internal fun AntiqueHomeScreen(
                         Spacer(Modifier.width(6.dp))
                         Column(Modifier.weight(1f)) {
                             Text("Как лечили / что применялось", fontFamily = WebLiterataFont,
-                                fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 18.sp)
+                                fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 20.sp)
                             Spacer(Modifier.height(3.dp))
                             Text("Состояние → средства → полный текст", fontFamily = WebSansFont,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 10.5.sp, lineHeight = 14.sp)
