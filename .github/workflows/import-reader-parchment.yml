@@ -1,0 +1,38 @@
+name: Import supplied reader parchment
+on:
+  push:
+    branches:
+      - codex/medicine-reader-source-20261009
+    paths:
+      - .github/workflows/import-reader-parchment.yml
+
+permissions:
+  contents: write
+
+jobs:
+  add-source-art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download the exact user-supplied source PNG and verify checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/src/main/res/drawable-nodpi
+          curl --fail --location --retry 3 --silent --show-error \
+            'https://gcdn.picsart.com/editing-temp/0501b66f-d1f7-438b-92ec-46c38eeeaf7b.png' \
+            --output app/src/main/res/drawable-nodpi/reader_parchment_source.png
+          echo '8b6f468e6a39a341b1ef55c5741168f1e8dd0c101f0c8a42dc094329c8a37fb7  app/src/main/res/drawable-nodpi/reader_parchment_source.png' | sha256sum --check
+          file app/src/main/res/drawable-nodpi/reader_parchment_source.png
+      - name: Commit original art into this design branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/res/drawable-nodpi/reader_parchment_source.png
+          git commit -m 'assets: add exact provided reading parchment PNG'
+          git push origin HEAD:codex/medicine-reader-source-20261009
