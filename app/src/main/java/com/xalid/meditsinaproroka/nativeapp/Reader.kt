@@ -13,6 +13,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,10 +25,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -187,6 +192,28 @@ fun ReaderScreen(
     }
 
     Box(modifier.fillMaxSize()) {
+        if (MaterialTheme.colorScheme.background.red >= 0.25f) {
+            // Restrained old-paper effect: soft beige centre, gently aged edges,
+            // no heavy photographs beneath long-form reading text.
+            Box(Modifier.matchParentSize().background(Color(0xFFF9F3E9)))
+            Image(
+                painter = painterResource(R.drawable.antique_parchment),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop,
+                alpha = 0.11f,
+            )
+            Box(
+                Modifier.matchParentSize().background(
+                    Brush.horizontalGradient(
+                        0f to Color(0xFFDBC6A9).copy(alpha = 0.22f),
+                        0.11f to Color(0xFFFFFAF2).copy(alpha = 0.66f),
+                        0.89f to Color(0xFFFFFAF2).copy(alpha = 0.66f),
+                        1f to Color(0xFFDBC6A9).copy(alpha = 0.22f),
+                    )
+                )
+            )
+        }
         Column(Modifier.fillMaxSize()) {
             PageHeader(
                 chapter.title,
