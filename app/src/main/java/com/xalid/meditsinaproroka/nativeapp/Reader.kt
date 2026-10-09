@@ -13,6 +13,9 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -30,6 +33,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.toArgb
@@ -94,6 +98,7 @@ fun ReaderScreen(
     route: Route.Reader,
     modifier: Modifier,
     back: () -> Unit,
+    animateEntrance: Boolean = false,
     navigate: (Route) -> Unit,
 ) {
     // Section-only records are not reading chapters. Resolve old bookmarks or
@@ -117,6 +122,17 @@ fun ReaderScreen(
     }
 
     val scrollState = rememberScrollState()
+    val foregroundOpacity = remember(chapter.id, animateEntrance) {
+        Animatable(if (animateEntrance) 0f else 1f)
+    }
+    LaunchedEffect(chapter.id, animateEntrance) {
+        if (animateEntrance) {
+            foregroundOpacity.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing),
+            )
+        }
+    }
     val backAction by rememberUpdatedState(back)
     // Chapter turns follow source order and ignore empty book-section headings.
     val previousChapter = remember(book, chapter.id) {
@@ -252,16 +268,23 @@ fun ReaderScreen(
 
     Box(modifier.fillMaxSize()) {
         if (MaterialTheme.colorScheme.background.red >= 0.25f) {
-            // Use the exact supplied antique-page image. No artificial tint,
-            // repeated pattern, gradient or overlay is added to the reading page.
+            // Keep the original antique paper asset unchanged. This very
+            // subtle translucent wash raises its brightness without replacing
+            // any grain, cracks, edges or the underlying paper image.
             Image(
                 painter = painterResource(R.drawable.reader_parchment_source),
                 contentDescription = null,
                 modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.FillBounds,
             )
+            Box(
+                Modifier.matchParentSize()
+                    .background(Color(0xFFFFFAF1).copy(alpha = 0.065f)),
+            )
         }
-        Column(Modifier.fillMaxSize()) {
+        // Animate only native text/controls; the page texture itself never
+        // slides, cross-fades or displays a temporary intermediary surface.
+        Column(Modifier.fillMaxSize().graphicsLayer { alpha = foregroundOpacity.value }) {
             PageHeader(
                 "Медицина Пророка ﷺ",
                 "Глава ${chapter.order} из ${book.chapters.size}",
