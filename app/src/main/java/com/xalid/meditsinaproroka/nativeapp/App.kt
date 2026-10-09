@@ -6,12 +6,13 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -118,11 +119,17 @@ fun MedicinaApp(book: BookData, store: AppStore) {
             targetState = current,
             transitionSpec = {
                 (
-                    fadeIn(animationSpec = tween(150)) +
-                        scaleIn(initialScale = 0.992f, animationSpec = tween(150))
+                    fadeIn(animationSpec = tween(205, easing = FastOutSlowInEasing)) +
+                        slideInHorizontally(
+                            animationSpec = tween(225, easing = FastOutSlowInEasing),
+                            initialOffsetX = { it / 40 },
+                        )
                 ).togetherWith(
-                    fadeOut(animationSpec = tween(150)) +
-                        scaleOut(targetScale = 0.996f, animationSpec = tween(150))
+                    fadeOut(animationSpec = tween(155, easing = FastOutSlowInEasing)) +
+                        slideOutHorizontally(
+                            animationSpec = tween(175, easing = FastOutSlowInEasing),
+                            targetOffsetX = { -it / 55 },
+                        )
                 ).using(SizeTransform(clip = false))
             },
             label = "sectionTransition",
@@ -282,8 +289,12 @@ private fun StandaloneBottomNav(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     items.forEach { item ->
-                        val color = if (item.selected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        val color by animateColorAsState(
+                            targetValue = if (item.selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                            animationSpec = tween(180, easing = FastOutSlowInEasing),
+                            label = "bottomNavSelection",
+                        )
                         Column(
                             Modifier.weight(1f).heightIn(min = 51.dp)
                                 .semantics { selected = item.selected }
