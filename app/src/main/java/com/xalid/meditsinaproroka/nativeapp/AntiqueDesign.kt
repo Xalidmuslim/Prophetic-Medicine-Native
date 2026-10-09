@@ -86,6 +86,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
     val enlarged = LocalDensity.current.fontScale > 1.15f
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val artWidth = maxWidth * 0.34f
+        val heroHeight = maxWidth / 3.45f
         if (!dark) {
             Image(painterResource(R.drawable.antique_hero_refined), null,
                 Modifier.fillMaxWidth().aspectRatio(3.45f).align(Alignment.TopCenter),
@@ -111,7 +112,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
             }
             if (enlarged) {
                 // At accessible font sizes, put all native text below the still life.
-                Spacer(Modifier.height(maxWidth / 3.45f - 70.dp + 4.dp))
+                Spacer(Modifier.height(heroHeight - 70.dp + 4.dp))
                 Text(book.title, fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
                     fontSize = 23.sp, lineHeight = 26.sp)
                 Spacer(Modifier.height(6.dp))
