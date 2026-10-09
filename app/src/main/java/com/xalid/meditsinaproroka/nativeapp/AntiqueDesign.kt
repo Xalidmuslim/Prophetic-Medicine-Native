@@ -2,6 +2,7 @@ package com.xalid.meditsinaproroka.nativeapp
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,12 +36,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 // Median calm paper regions sampled from the supplied reference.
-internal val AntiqueParchment = Color(0xFFE9DAC8)
-internal val AntiquePaper = Color(0xFFF1E7D8)
+internal val AntiqueParchment = Color(0xFFF0E4D3)
+internal val AntiquePaper = Color(0xFFF8F0E4)
 internal val AntiqueInk = Color(0xFF211D19)
 internal val AntiqueMuted = Color(0xFF625D53)
 internal val AntiqueGreen = Color(0xFF305A43)
-internal val AntiqueBorder = Color(0xFFD8C8AE)
+internal val AntiqueBorder = Color(0xFFDCCAB1)
 
 @Composable
 internal fun AntiqueIcon(@DrawableRes resource: Int, modifier: Modifier, description: String? = null,
@@ -71,10 +72,24 @@ private fun PaperCard(
                 frame.draw(canvas.nativeCanvas)
             }
         }) {
-            if (!dark) Image(
-                painterResource(R.drawable.antique_card_paper), null,
-                Modifier.matchParentSize().padding(4.dp).clip(RoundedCornerShape(10.dp)), contentScale = ContentScale.Crop, alpha = 0.65f,
-            )
+            if (!dark) {
+                Image(
+                    painterResource(R.drawable.antique_card_paper), null,
+                    Modifier.matchParentSize().padding(4.dp).clip(RoundedCornerShape(10.dp)),
+                    contentScale = ContentScale.Crop, alpha = 0.36f,
+                )
+                Box(
+                    Modifier.matchParentSize().padding(5.dp).clip(RoundedCornerShape(9.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                0f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
+                                0.12f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
+                                0.88f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
+                                1f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
+                            )
+                        )
+                )
+            }
             content()
         }
     }
@@ -84,17 +99,33 @@ private fun PaperCard(
 private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
     val enlarged = LocalDensity.current.fontScale > 1.15f
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
+    BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 130.dp)) {
         val artWidth = maxWidth * 0.34f
         val heroHeight = maxWidth / 3.45f
         if (!dark) {
+            // Image begins at y=0 so Android's transparent status bar belongs to the same paper.
             Image(painterResource(R.drawable.antique_hero_refined), null,
-                Modifier.fillMaxWidth().aspectRatio(3.45f).align(Alignment.TopCenter),
-                contentScale = ContentScale.Fit)
-            Box(Modifier.fillMaxWidth().aspectRatio(3.45f).align(Alignment.TopCenter)
-                .background(Brush.verticalGradient(0f to Color.Transparent, 0.92f to Color.Transparent, 1f to AntiqueParchment)))
+                Modifier.fillMaxWidth().height(132.dp).align(Alignment.TopCenter),
+                contentScale = ContentScale.Crop)
+            Box(
+                Modifier.fillMaxWidth().height(132.dp).align(Alignment.TopCenter)
+                    .background(Color(0xFFF5EADB).copy(alpha = 0.32f))
+            )
+            Box(
+                Modifier.fillMaxWidth().height(132.dp).align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            0f to Color(0xFFF7EBDD).copy(alpha = 0.12f),
+                            0.73f to Color.Transparent,
+                            1f to AntiqueParchment,
+                        )
+                    )
+            )
         }
-        Column(Modifier.fillMaxWidth().padding(start = 14.dp, end = 12.dp, top = 12.dp, bottom = 6.dp)) {
+        Column(
+            Modifier.fillMaxWidth().statusBarsPadding()
+                .padding(start = 14.dp, end = 12.dp, top = 7.dp, bottom = 9.dp)
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(painterResource(R.drawable.medicine_launcher), "Настройки чтения",
                     Modifier.size(70.dp).clip(RoundedCornerShape(15.dp)).clickable(role = Role.Button, onClick = onSettings),
@@ -146,8 +177,8 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
                 }
             }
             Spacer(Modifier.height(2.dp))
-            Text(title, fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
-                fontSize = 17.5.sp, lineHeight = 21.sp)
+            Text(title, fontFamily = WebSerifFont, fontWeight = FontWeight.SemiBold,
+                fontSize = 16.5.sp, lineHeight = 20.sp)
             Spacer(Modifier.height(9.dp))
             LinearProgressIndicator(
                 progress = { pct / 100f }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
@@ -160,14 +191,12 @@ private fun ReadingCard(title: String, pct: Int, hasLast: Boolean, onContinue: (
                 onClick = onContinue,
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 shape = RoundedCornerShape(10.dp),
-                color = AntiqueGreen,
-                border = BorderStroke(0.6.dp, Color(0xFF78866A)),
-                shadowElevation = 1.dp,
+                color = Color(0xFF315A46),
+                border = BorderStroke(1.dp, Color(0xFFAF986C)),
+                shadowElevation = 0.dp,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    // Cropping is restricted to decorative edges, never text or functional art.
-                    Image(painterResource(R.drawable.antique_button), null,
-                        Modifier.matchParentSize(), contentScale = ContentScale.Crop)
+                    // Keep the button matte; artwork must never compete with its label.
                     Text(if (hasLast) "Продолжить →" else "Начать чтение →",
                         Modifier.padding(horizontal = 38.dp, vertical = 10.dp),
                         fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
@@ -222,32 +251,34 @@ internal fun AntiqueHomeScreen(
     Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         if (!dark) Image(painterResource(R.drawable.antique_parchment), null,
             Modifier.matchParentSize(), contentScale = ContentScale.Crop, alpha = 0.72f)
-        if (!dark) {
-            Image(painterResource(R.drawable.antique_foliage), null,
-                Modifier.align(Alignment.TopEnd).padding(top = 145.dp).width(14.dp).height(105.dp),
-                contentScale = ContentScale.Crop, alpha = 0.55f)
-            Image(painterResource(R.drawable.antique_foliage), null,
-                Modifier.align(Alignment.BottomEnd).width(14.dp).height(92.dp),
-                contentScale = ContentScale.Crop, alpha = 0.45f)
-            Image(painterResource(R.drawable.antique_foliage), null,
-                Modifier.align(Alignment.BottomStart).width(12.dp).height(75.dp),
-                contentScale = ContentScale.Crop, alpha = 0.35f)
-        }
-        LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), contentPadding = PaddingValues(bottom = 16.dp),
+        // No clipped leaves over the page edges; the image stays within the header.
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             item { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
             item {
-                BoxWithConstraints(Modifier.fillMaxWidth().padding(start = 21.dp, end = 19.dp, top = 0.dp, bottom = 2.dp)) {
-                  val headingSize = ((maxWidth.value + 40f) / 14.6f).coerceIn(24.5f, 28f)
-                  Column {
-                    Text("Книга, разбитая на главы,\nтемы и средства",
-                        fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
-                        fontSize = headingSize.sp, lineHeight = (headingSize * 1.06f).sp, letterSpacing = (-0.4).sp)
-                    Spacer(Modifier.height(7.dp))
-                    Text("Полный русский текст с поиском, заметками, источниками и офлайн-доступом.",
-                        color = MaterialTheme.colorScheme.onBackground, fontFamily = WebSansFont,
-                        fontSize = 12.5.sp, lineHeight = 16.sp)
-                  }
+                BoxWithConstraints(
+                    Modifier.fillMaxWidth().padding(horizontal = 14.dp)
+                        .border(0.7.dp, AntiqueBorder.copy(alpha = if (dark) 0f else 0.82f), RoundedCornerShape(9.dp))
+                        .background(
+                            if (dark) Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent))
+                            else Brush.verticalGradient(
+                                listOf(Color(0xFFF0E4D4).copy(alpha = 0.56f), Color(0xFFF8EEE0).copy(alpha = 0.48f))
+                            ),
+                            RoundedCornerShape(9.dp)
+                        )
+                        .padding(start = 13.dp, end = 12.dp, top = 11.dp, bottom = 12.dp)
+                ) {
+                    val headingSize = ((maxWidth.value + 40f) / 14.6f).coerceIn(24.5f, 28f)
+                    Column {
+                        Text("Книга, разбитая на главы,\nтемы и средства",
+                            fontFamily = WebSerifFont, fontWeight = FontWeight.Bold,
+                            fontSize = headingSize.sp, lineHeight = (headingSize * 1.06f).sp,
+                            letterSpacing = (-0.4).sp)
+                        Spacer(Modifier.height(7.dp))
+                        Text("Полный русский текст с поиском, заметками, источниками и офлайн-доступом.",
+                            color = MaterialTheme.colorScheme.onBackground, fontFamily = WebSansFont,
+                            fontSize = 12.5.sp, lineHeight = 16.sp)
+                    }
                 }
             }
             item {
@@ -273,10 +304,6 @@ internal fun AntiqueHomeScreen(
             }
             item {
                 PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp), onClick = { navigate(Route.Treatments) }) {
-                    // Foliage stays in a narrow edge strip outside the text's reserved width.
-                    if (!dark) Image(painterResource(R.drawable.antique_foliage), null,
-                        Modifier.align(Alignment.CenterEnd).width(26.dp).height(65.dp),
-                        contentScale = ContentScale.Crop, alpha = 0.16f)
                     Row(Modifier.fillMaxWidth().padding(start = 5.dp, end = 10.dp, top = 3.dp, bottom = 3.dp),
                         verticalAlignment = Alignment.CenterVertically) {
                         AntiqueIcon(R.drawable.antique_mortar_detail, Modifier.size(60.dp))
