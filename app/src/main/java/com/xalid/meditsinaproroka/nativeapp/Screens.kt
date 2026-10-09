@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,8 +22,14 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PageHeader(title: String, subtitle: String? = null, back: (() -> Unit)? = null) {
-    WebHeader(title = title, subtitle = subtitle, back = back)
+fun PageHeader(
+    title: String,
+    subtitle: String? = null,
+    back: (() -> Unit)? = null,
+    settings: (() -> Unit)? = null,
+    compact: Boolean = false,
+) {
+    WebHeader(title = title, subtitle = subtitle, back = back, settings = settings, compact = compact)
 }
 
 @Composable
@@ -176,12 +183,35 @@ fun HomeScreen(
 }
 
 @Composable
-fun BookScreen(book: BookData, modifier: Modifier, back: () -> Unit, open: (String) -> Unit) {
+fun BookScreen(
+    book: BookData,
+    modifier: Modifier,
+    back: () -> Unit,
+    focusChapterId: String? = null,
+    focusRequest: Int = 0,
+    open: (String) -> Unit,
+) {
     val readableChapters = remember(book) { book.chapters.filter { it.blocks.isNotEmpty() } }
     val sections = remember(readableChapters) { readableChapters.groupBy { it.section } }
+    val focusIndex = remember(sections, focusChapterId) {
+        var index = 0
+        var found = 0
+        sections.forEach { (_, chapters) ->
+            index += 1 // section heading
+            val indexInSection = chapters.indexOfFirst { it.id == focusChapterId }
+            if (indexInSection >= 0) found = index + indexInSection
+            index += chapters.size
+        }
+        found
+    }
+    val listState = rememberLazyListState()
+    LaunchedEffect(focusChapterId, focusRequest) {
+        if (focusChapterId != null) listState.scrollToItem(focusIndex)
+    }
     Column(modifier.fillMaxSize()) {
         PageHeader("Содержание", "${readableChapters.size} глав для чтения", back)
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 112.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
