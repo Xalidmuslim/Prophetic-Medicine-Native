@@ -432,12 +432,13 @@ fun ReaderScreen(
                                 .fillMaxWidth()
                                 .onGloballyPositioned { coordinates ->
                                     if (!blockMeasured[index]) {
+                                        val measuredY = coordinates
+                                            .positionInParent().y.roundToInt().coerceAtLeast(0)
+                                        val groupHead = paragraphGroupStart[index]
                                         blockOffsets[index] =
-                                            coordinates
-                                                .positionInParent()
-                                                .y
-                                                .roundToInt()
-                                                .coerceAtLeast(0)
+                                            if (groupHead < index && blockOffsets[groupHead] >= 0)
+                                                blockOffsets[groupHead]
+                                            else measuredY
                                         blockMeasured[index] = true
                                         measuredBlockCount += 1
                                     }
