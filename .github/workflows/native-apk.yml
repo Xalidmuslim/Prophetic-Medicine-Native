@@ -52,7 +52,21 @@ jobs:
           ! grep -R 'navigateToHeartPrayer' app/src/main/java/
           test ! -e app/src/main/java/app/alfatiha/tafsir/MainActivity.kt
       - name: Native Kotlin Gradle build
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set +e
+          gradle :app:assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/medicine-native-build.log
+          build_status=${PIPESTATUS[0]}
+          set -e
+          if [ "$build_status" -ne 0 ]; then
+            python3 - <<'PYLOG'
+          from pathlib import Path
+          for line in Path('/tmp/medicine-native-build.log').read_text().splitlines()[-100:]:
+              message=line.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::error::'+message)
+          PYLOG
+          fi
+          exit "$build_status"
       - name: Verify signed and readable Android APK
         shell: bash
         run: |
