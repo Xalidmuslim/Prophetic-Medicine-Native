@@ -28,6 +28,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -99,6 +106,7 @@ fun MedicinaApp(book: BookData, store: AppStore) {
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom),
         bottomBar = {
             StandaloneBottomNav(
                 current = current,
@@ -124,25 +132,26 @@ fun MedicinaApp(book: BookData, store: AppStore) {
             },
             label = "sectionTransition",
         ) { route ->
+            val screenModifier = if (route == Route.Home) modifier else modifier.statusBarsPadding()
             screenStateHolder.SaveableStateProvider(routeStateKey(route)) {
                 when (route) {
                 Route.Home -> WebHomeScreen(
                     book = book,
                     store = store,
-                    modifier = modifier,
+                    modifier = screenModifier,
                     navigate = ::navigate,
                     onGlobalSearch = { navigate(Route.Search) },
                     onToggleTheme = store::toggleSharedTheme,
                 )
-                Route.Book -> BookScreen(book, modifier, ::goBack) { navigate(Route.Reader(it)) }
-                Route.Topics -> TopicsScreen(book, modifier) { navigate(Route.TopicDetail(it)) }
+                Route.Book -> BookScreen(book, screenModifier, ::goBack) { navigate(Route.Reader(it)) }
+                Route.Topics -> TopicsScreen(book, screenModifier) { navigate(Route.TopicDetail(it)) }
                 Route.Search -> SearchScreen(
                     book = book,
                     query = searchQuery,
                     onQuery = { searchQuery = it },
                     filter = searchFilter,
                     onFilter = { searchFilter = it },
-                    modifier = modifier,
+                    modifier = screenModifier,
                     onOpen = { chapterId, anchor -> navigate(Route.Reader(chapterId, anchor)) },
                 )
                 Route.Bookmarks -> BookmarksScreen(
@@ -150,34 +159,34 @@ fun MedicinaApp(book: BookData, store: AppStore) {
                     store = store,
                     folder = bookmarkFolder,
                     onFolder = { bookmarkFolder = it },
-                    modifier = modifier,
+                    modifier = screenModifier,
                     onOpen = { id, anchor -> navigate(Route.Reader(id, anchor)) },
                 )
-                Route.More -> WebMoreScreen(modifier, ::navigate)
-                Route.Remedies -> RemediesScreen(book, modifier, ::goBack) { navigate(Route.RemedyDetail(it)) }
-                Route.Treatments -> TreatmentsScreen(book, modifier, ::goBack) { navigate(Route.Reader(it)) }
-                Route.Notes -> NotesScreen(book, store, modifier, ::goBack) { id, anchor -> navigate(Route.Reader(id, anchor)) }
-                Route.Settings -> WebSettingsScreen(store, modifier, ::goBack)
-                Route.Hadiths -> HadithsScreen(book, modifier, ::goBack) { id, anchor -> navigate(Route.Reader(id, anchor)) }
-                Route.History -> HistoryScreen(book, store, modifier, ::goBack) { id, anchor -> navigate(Route.Reader(id, anchor)) }
-                Route.Offline -> OfflineScreen(book, modifier, ::goBack)
-                Route.About -> AboutScreen(book, modifier, ::goBack)
-                Route.Collections -> CollectionsScreen(book, modifier, ::goBack) { navigate(Route.CollectionDetail(it)) }
-                Route.Glossary -> GlossaryScreen(book, modifier, ::goBack) { navigate(Route.GlossaryDetail(it)) }
-                Route.Source -> SourceScreen(book, modifier, ::goBack)
-                is Route.GlossaryDetail -> GlossaryDetailScreen(book, route.id, modifier, ::goBack) { id, anchor ->
+                Route.More -> WebMoreScreen(screenModifier, ::navigate)
+                Route.Remedies -> RemediesScreen(book, screenModifier, ::goBack) { navigate(Route.RemedyDetail(it)) }
+                Route.Treatments -> TreatmentsScreen(book, screenModifier, ::goBack) { navigate(Route.Reader(it)) }
+                Route.Notes -> NotesScreen(book, store, screenModifier, ::goBack) { id, anchor -> navigate(Route.Reader(id, anchor)) }
+                Route.Settings -> WebSettingsScreen(store, screenModifier, ::goBack)
+                Route.Hadiths -> HadithsScreen(book, screenModifier, ::goBack) { id, anchor -> navigate(Route.Reader(id, anchor)) }
+                Route.History -> HistoryScreen(book, store, screenModifier, ::goBack) { id, anchor -> navigate(Route.Reader(id, anchor)) }
+                Route.Offline -> OfflineScreen(book, screenModifier, ::goBack)
+                Route.About -> AboutScreen(book, screenModifier, ::goBack)
+                Route.Collections -> CollectionsScreen(book, screenModifier, ::goBack) { navigate(Route.CollectionDetail(it)) }
+                Route.Glossary -> GlossaryScreen(book, screenModifier, ::goBack) { navigate(Route.GlossaryDetail(it)) }
+                Route.Source -> SourceScreen(book, screenModifier, ::goBack)
+                is Route.GlossaryDetail -> GlossaryDetailScreen(book, route.id, screenModifier, ::goBack) { id, anchor ->
                     navigate(Route.Reader(id, anchor))
                 }
-                is Route.TopicDetail -> TopicDetailScreen(book, route.id, modifier, ::goBack) {
+                is Route.TopicDetail -> TopicDetailScreen(book, route.id, screenModifier, ::goBack) {
                     navigate(Route.Reader(it))
                 }
-                is Route.RemedyDetail -> RemedyDetailScreen(book, route.id, modifier, ::goBack) { id, anchor ->
+                is Route.RemedyDetail -> RemedyDetailScreen(book, route.id, screenModifier, ::goBack) { id, anchor ->
                     navigate(Route.Reader(id, anchor))
                 }
-                is Route.CollectionDetail -> CollectionDetailScreen(book, route.id, modifier, ::goBack) {
+                is Route.CollectionDetail -> CollectionDetailScreen(book, route.id, screenModifier, ::goBack) {
                     navigate(Route.Reader(it))
                 }
-                is Route.Reader -> ReaderScreen(book, store, route, modifier, ::goBack) { next ->
+                is Route.Reader -> ReaderScreen(book, store, route, screenModifier, ::goBack) { next ->
                     navigate(next)
                 }
                 }
@@ -220,47 +229,36 @@ private fun StandaloneBottomNav(
     onBookmarks: () -> Unit,
     onMore: () -> Unit,
 ) {
-    data class NavItem(
-        val label: String,
-        val icon: androidx.compose.ui.graphics.vector.ImageVector,
-        val selected: Boolean,
-        val action: () -> Unit,
-    )
+    data class NavItem(val label: String, val icon: Int, val selected: Boolean, val action: () -> Unit)
     val items = listOf(
-        NavItem("Главная", androidx.compose.material.icons.Icons.Default.Home, current == Route.Home, onHome),
-        NavItem("Темы", androidx.compose.material.icons.Icons.Default.GridView, current == Route.Topics, onTopics),
-        NavItem("Поиск", androidx.compose.material.icons.Icons.Default.Search, current == Route.Search, onSearch),
-        NavItem("Закладки", androidx.compose.material.icons.Icons.Default.BookmarkBorder, current == Route.Bookmarks, onBookmarks),
-        NavItem("Ещё", androidx.compose.material.icons.Icons.Default.MoreHoriz, current == Route.More, onMore),
+        NavItem("Главная", R.drawable.nav_home, current == Route.Home, onHome),
+        NavItem("Темы", R.drawable.nav_topics, current == Route.Topics, onTopics),
+        NavItem("Поиск", R.drawable.nav_search, current == Route.Search, onSearch),
+        NavItem("Закладки", R.drawable.nav_bookmark, current == Route.Bookmarks, onBookmarks),
+        NavItem("Ещё", R.drawable.nav_more, current == Route.More, onMore),
     )
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
-    val background = if (dark) Color(0xFF1F2522) else Color(0xFFFBF7F0)
-    val muted = if (dark) Color(0xFFAAB3AD) else Color(0xFF55524C)
-    val shape = RoundedCornerShape(18.dp)
-    Row(
-        modifier = Modifier.fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-            .padding(horizontal = 8.dp, vertical = 5.dp)
-            .height(69.dp)
-            .shadow(2.dp, shape)
-            .clip(shape)
-            .background(background),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        items.forEach { item ->
-            val color = if (item.selected) Color(0xFF356D57) else muted
-            Column(
-                modifier = Modifier.weight(1f).fillMaxHeight().clickable { item.action() }
-                    .padding(top = 4.dp, bottom = 2.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                androidx.compose.material3.Icon(
-                    imageVector = item.icon, contentDescription = item.label,
-                    modifier = Modifier.size(24.dp), tint = color
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(item.label, fontSize = 11.sp, color = color, maxLines = 1)
+    val background = if (dark) MaterialTheme.colorScheme.surface else AntiquePaper
+    androidx.compose.material3.Surface(color = background, shadowElevation = 2.dp) {
+        Row(
+            Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 4.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            items.forEach { item ->
+                val color = if (item.selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                Column(
+                    Modifier.weight(1f).heightIn(min = 56.dp)
+                        .semantics { selected = item.selected }
+                        .clickable(role = Role.Tab, onClick = item.action)
+                        .padding(horizontal = 1.dp, vertical = 3.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    AntiqueIcon(item.icon, Modifier.size(33.dp))
+                    Spacer(Modifier.height(1.dp))
+                    Text(item.label, fontFamily = WebSansFont, fontSize = 10.5.sp, lineHeight = 13.sp,
+                        color = color, fontWeight = if (item.selected) FontWeight.SemiBold else FontWeight.Normal)
+                }
             }
         }
     }

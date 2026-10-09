@@ -8,6 +8,10 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import android.app.Activity
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -33,18 +37,18 @@ private val DarkScheme = darkColorScheme(
 )
 
 private val LightScheme = lightColorScheme(
-    primary = Color(0xFF315C45),
+    primary = Color(0xFF305A43),
     onPrimary = Color(0xFFFFFAF2),
     primaryContainer = Color(0xFFE8EEE9),
     onPrimaryContainer = Color(0xFF203D2E),
-    background = Color(0xFFF4EFE5),
-    onBackground = Color(0xFF101010),
-    surface = Color(0xFFFBF7EF),
-    onSurface = Color(0xFF101010),
+    background = Color(0xFFEFE3CF),
+    onBackground = Color(0xFF211D19),
+    surface = Color(0xFFF8F1E5),
+    onSurface = Color(0xFF211D19),
     surfaceVariant = Color(0xFFEAE3D7),
-    onSurfaceVariant = Color(0xFF050505),
-    outline = Color(0xFFD8CEBD),
-    outlineVariant = Color(0xFFD8CEBD),
+    onSurfaceVariant = Color(0xFF625D53),
+    outline = Color(0xFFD8C8AE),
+    outlineVariant = Color(0xFFD8C8AE),
     secondary = Color(0xFFB99A62),
     onSecondary = Color(0xFF101010),
     error = Color(0xFF9B4940),
@@ -82,6 +86,17 @@ fun MedicinaTheme(mode: String, content: @Composable () -> Unit) {
         "dark" -> true
         "light" -> false
         else -> isSystemInDarkTheme()
+    }
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            (view.context as? Activity)?.window?.let { window ->
+                WindowCompat.getInsetsController(window, view).apply {
+                    isAppearanceLightStatusBars = !dark
+                    isAppearanceLightNavigationBars = !dark
+                }
+            }
+        }
     }
     MaterialTheme(
         colorScheme = if (dark) DarkScheme else LightScheme,
