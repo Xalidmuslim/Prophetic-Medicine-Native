@@ -49,7 +49,7 @@ private fun ChapterRow(chapter: Chapter, onClick: () -> Unit, trailing: String? 
                 modifier = Modifier.width(34.dp)
             )
             Column(Modifier.weight(1f)) {
-                Text(chapter.title, fontFamily = WebModernFont, fontWeight = FontWeight.Bold, fontSize = 16.sp, lineHeight = 20.sp)
+                Text(chapter.title, fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold, fontSize = 16.sp, lineHeight = 20.sp)
                 if (chapter.section.isNotBlank()) {
                     Spacer(Modifier.height(4.dp))
                     Text(
@@ -97,7 +97,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item {
-            Text("Медицина Пророка ﷺ", fontFamily = WebModernFont, fontSize = 34.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold)
+            Text("Медицина Пророка ﷺ", fontFamily = WebLiterataFont, fontSize = 34.sp, lineHeight = 38.sp, fontWeight = FontWeight.Bold)
             Text(book.author, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp)
             Spacer(Modifier.height(8.dp))
             Text("Полный текст · чтение и изучение", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
@@ -109,7 +109,7 @@ fun HomeScreen(
                     Column(Modifier.padding(18.dp)) {
                         Text("Продолжить чтение", style = MaterialTheme.typography.labelLarge)
                         Spacer(Modifier.height(5.dp))
-                        Text(last.title, fontFamily = WebModernFont, fontSize = 23.sp, lineHeight = 27.sp, fontWeight = FontWeight.SemiBold)
+                        Text(last.title, fontFamily = WebLiterataFont, fontSize = 23.sp, lineHeight = 27.sp, fontWeight = FontWeight.SemiBold)
                         Spacer(Modifier.height(12.dp))
                         Button(onClick = { navigate(Route.Reader(last.id, resume = true)) }, modifier = Modifier.fillMaxWidth()) { Text("Продолжить") }
                     }
@@ -888,7 +888,7 @@ fun AboutScreen(book: BookData, modifier: Modifier, back: () -> Unit) {
     Column(modifier.fillMaxSize()) {
         PageHeader("О книге", null, back)
         Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text(book.title, fontFamily = WebModernFont, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text(book.title, fontFamily = WebLiterataFont, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Text(book.author, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("Здесь сохранён полный текст издания с исходным порядком глав и дополнительной тематической навигацией.")
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
