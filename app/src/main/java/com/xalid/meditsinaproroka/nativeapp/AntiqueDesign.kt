@@ -252,7 +252,7 @@ internal fun AntiqueHomeScreen(
         if (!dark) Image(painterResource(R.drawable.antique_parchment), null,
             Modifier.matchParentSize(), contentScale = ContentScale.Crop, alpha = 0.72f)
         // No clipped leaves over the page edges; the image stays within the header.
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 20.dp),
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             item { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
             item {
