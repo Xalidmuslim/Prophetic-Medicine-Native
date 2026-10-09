@@ -1,0 +1,106 @@
+name: One-time delete obsolete Medicine previews
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/purge-medicine-previews-once.yml']
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  purge-obsolete:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify preserved native Medicine version 1.0
+        run: |
+          set -euo pipefail
+          grep -Fq "versionCode 1" app/build.gradle
+          grep -Fq "versionName '1.0.0-modulecopy-preview'" app/build.gradle
+          test -f app/src/main/assets/book.json
+      - name: Delete obsolete preview refs and associated Actions runs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import os, json, time, urllib.request, urllib.error, sys
+          repo = os.environ["GITHUB_REPOSITORY"]
+          api = "https://api.github.com/repos/" + repo
+          headers = {
+              "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+              "Accept": "application/vnd.github+json",
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "Medicine-original-version-cleanup"
+          }
+          old = {
+            "archive/floot-web-source-20261008": "37a4ff05182ecc024911056e505b91a71d029149",
+            "backup/medicine-native-working-20261008": "a12f1e22a1240622431c802b7068e66076b4c028",
+            "codex/medicine-smooth-startup-20261008": "a12f1e22a1240622431c802b7068e66076b4c028",
+            "codex/medicine-premium-redesign-20261008": "9cefae97210677d9c7b3eb0c70e362e365d26ceb",
+            "codex/medicine-copy-module-20261008": "601d38c9a7062c7117690eb67cb1594d80fdbfe6"
+          }
+          # Preserve all original v1.0 workflow runs and this restored main build.
+          obsolete_run_branches = set(old) - {"codex/medicine-copy-module-20261008"}
+          def request(path, method="GET"):
+              url = api + path
+              for attempt in range(5):
+                  req = urllib.request.Request(url, headers=headers, method=method)
+                  try:
+                      with urllib.request.urlopen(req, timeout=45) as response:
+                          data = response.read()
+                          return json.loads(data) if data else None
+                  except urllib.error.HTTPError as e:
+                      if e.code == 404 and method == "DELETE":
+                          print("Already deleted:", path, flush=True)
+                          return None
+                      if e.code in (403, 429, 502, 503) and attempt < 4:
+                          delay = 10 + attempt * 12
+                          print("GitHub API throttled:", path, e.code, "retry in", delay, flush=True)
+                          time.sleep(delay)
+                          continue
+                      print("GitHub API error", method, path, e.code, e.read().decode(errors="replace")[:350], flush=True)
+                      raise
+          assert request("/git/ref/heads/main")["ref"] == "refs/heads/main"
+          current = request("/git/ref/heads/main")["object"]["sha"]
+          print("Protected main remains:", current, flush=True)
+          # Snapshot references and runs BEFORE deleting branches: do not rely on
+          # history that may disappear from the listing afterwards.
+          refs = {}
+          for name, expected in old.items():
+              data = request("/git/ref/heads/" + name)
+              observed = data["object"]["sha"]
+              if observed != expected:
+                  raise RuntimeError(f"Ref {name} moved from {expected} to {observed}; refusing deletion")
+              refs[name] = observed
+          runs = []
+          page = 1
+          while True:
+              data = request(f"/actions/runs?per_page=100&page={page}")
+              block = data.get("workflow_runs", [])
+              runs += [x["id"] for x in block if x.get("head_branch") in obsolete_run_branches]
+              if len(block) < 100: break
+              page += 1
+          print("Obsolete workflow runs to remove:", len(runs), flush=True)
+          # Git branch deletion is restricted to this exact five-name allowlist;
+          # the default branch and original project's contents are untouched.
+          for name in refs:
+              print("Deleting branch:", name, flush=True)
+              request("/git/refs/heads/" + name, "DELETE")
+          print("All five obsolete refs removed.", flush=True)
+          failed = []
+          for i, run_id in enumerate(runs, 1):
+              try:
+                  request(f"/actions/runs/{run_id}", "DELETE")
+              except Exception as e:
+                  failed.append((run_id, str(e)))
+              if i % 10 == 0: print("Deleted preview runs:", i, "/", len(runs), flush=True)
+              time.sleep(0.20)
+          print("Obsolete runs attempted", len(runs), "failures", len(failed), flush=True)
+          if failed:
+              print("Failed run deletions",failed[:12],flush=True)
+              raise RuntimeError("Preview branches removed but some old run logs/artifacts remain")
+          print("CLEANUP COMPLETED: main v1.0 retained; five old branches and their preview runs removed.",flush=True)
+          PY
