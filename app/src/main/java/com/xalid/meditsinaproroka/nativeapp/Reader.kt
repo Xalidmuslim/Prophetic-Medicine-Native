@@ -256,6 +256,8 @@ fun ReaderScreen(
                 "Медицина Пророка ﷺ",
                 "Глава ${chapter.order} из ${book.chapters.size}",
                 back,
+                settings = { settingsOpen = true },
+                compact = true,
             )
 
             Column(
@@ -268,7 +270,7 @@ fun ReaderScreen(
                         start = 16.dp,
                         end = 16.dp,
                         top = 5.dp,
-                        bottom = 138.dp,
+                        bottom = 112.dp,
                     ),
             ) {
                 Text(
@@ -507,20 +509,6 @@ fun ReaderScreen(
             }
         }
 
-        SmallFloatingActionButton(
-            onClick = { settingsOpen = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 12.dp, bottom = 100.dp),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-        ) {
-            Text(
-                "Aa",
-                fontFamily = WebSerifFont,
-                fontWeight = FontWeight.Bold,
-            )
-        }
     }
 
     if (settingsOpen) {
