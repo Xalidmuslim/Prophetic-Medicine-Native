@@ -264,19 +264,12 @@ internal fun AntiqueHomeScreen(
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             item { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
             item {
-                BoxWithConstraints(
-                    Modifier.fillMaxWidth().padding(horizontal = 14.dp)
-                        .border(0.7.dp, AntiqueBorder.copy(alpha = if (dark) 0f else 0.82f), RoundedCornerShape(9.dp))
-                        .background(
-                            if (dark) Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent))
-                            else Brush.verticalGradient(
-                                listOf(Color(0xFFF0E4D4).copy(alpha = 0.56f), Color(0xFFF8EEE0).copy(alpha = 0.48f))
-                            ),
-                            RoundedCornerShape(9.dp)
-                        )
-                        .padding(start = 13.dp, end = 12.dp, top = 11.dp, bottom = 12.dp)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                // The same real antique edge artwork used by other book cards.
+                // Text remains native, selectable by accessibility and crisp.
+                PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp)) {
+                    Column(Modifier.fillMaxWidth().padding(
+                        start = 16.dp, end = 16.dp, top = 11.dp, bottom = 12.dp,
+                    )) {
                         Text(
                             "Посланник Аллаха ﷺ сказал:",
                             fontFamily = WebSansFont,
@@ -285,6 +278,7 @@ internal fun AntiqueHomeScreen(
                             lineHeight = 16.sp,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
+                        Spacer(Modifier.height(2.dp))
                         Text(
                             "«Аллах не ниспослал ни одной болезни, не ниспослав вместе с ней исцеления»",
                             fontFamily = WebLiterataFont,
@@ -293,6 +287,7 @@ internal fun AntiqueHomeScreen(
                             lineHeight = 21.sp,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
+                        Spacer(Modifier.height(7.dp))
                         Text(
                             "Источник: Сахих аль-Бухари, хадис № 5678.",
                             fontFamily = WebSansFont,
