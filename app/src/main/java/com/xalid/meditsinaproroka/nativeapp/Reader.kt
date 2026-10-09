@@ -975,44 +975,58 @@ private fun SelectableNativeText(
     block: BookBlock,
     store: AppStore,
     textColorOverride: Color? = null,
+    mergedBlocks: List<BookBlock> = listOf(block),
 ) {
     val settings = store.settings
     val textColor = (textColorOverride ?: MaterialTheme.colorScheme.onBackground).toArgb()
     val highlightColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.30f).toArgb()
-    val highlights = store.highlightsFor(chapter.id, block.id)
-    val notes = store.notesFor(chapter.id, block.id)
 
-    val styledText = remember(block.text, highlights, notes, highlightColor) {
-        SpannableString(block.text).also { span ->
-            highlights.forEach { h ->
-                val start = h.start.coerceIn(0, block.text.length)
-                val end = h.end.coerceIn(start, block.text.length)
-                if (end > start) {
-                    span.setSpan(
-                        BackgroundColorSpan(highlightColor),
-                        start,
-                        end,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-                    )
-                }
+    // A visual paragraph may contain multiple original blocks. Each range
+    // always maps back to its own persisted block ID and character offsets.
+    val segments = remember(mergedBlocks) {
+        var cursor = 0
+        mergedBlocks.map { source ->
+            ReaderTextSegment(source, cursor).also {
+                cursor += source.text.length + 1
             }
-            notes.forEach { n ->
-                val start = n.start.coerceIn(0, block.text.length)
-                val end = n.end.coerceIn(start, block.text.length)
-                if (end > start) {
-                    span.setSpan(
-                        UnderlineSpan(),
-                        start,
-                        end,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-                    )
-                }
+        }
+    }
+    val displayText = remember(mergedBlocks) {
+        mergedBlocks.joinToString(" ") { it.text }
+    }
+    val highlights = segments.flatMap { segment ->
+        store.highlightsFor(chapter.id, segment.block.id).mapNotNull { h ->
+            val from = h.start.coerceIn(0, segment.block.text.length)
+            val to = h.end.coerceIn(from, segment.block.text.length)
+            if (to > from) (segment.start + from) to (segment.start + to) else null
+        }
+    }
+    val notes = segments.flatMap { segment ->
+        store.notesFor(chapter.id, segment.block.id).mapNotNull { note ->
+            val from = note.start.coerceIn(0, segment.block.text.length)
+            val to = note.end.coerceIn(from, segment.block.text.length)
+            if (to > from) (segment.start + from) to (segment.start + to) else null
+        }
+    }
+
+    val styledText = remember(displayText, highlights, notes, highlightColor) {
+        SpannableString(displayText).also { span ->
+            highlights.forEach { (from, to) ->
+                span.setSpan(
+                    BackgroundColorSpan(highlightColor),
+                    from,
+                    to,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+                )
+            }
+            notes.forEach { (from, to) ->
+                span.setSpan(UnderlineSpan(), from, to, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
     }
 
     val renderKey = remember(
-        block.id,
+        displayText,
         settings.fontSizeSp,
         settings.lineSpacing,
         settings.fontFamily,
@@ -1022,7 +1036,7 @@ private fun SelectableNativeText(
         notes,
     ) {
         listOf(
-            block.id,
+            mergedBlocks.joinToString(",") { it.id },
             settings.fontSizeSp,
             settings.lineSpacing,
             settings.fontFamily,
@@ -1075,23 +1089,27 @@ private fun SelectableNativeText(
                         mode: ActionMode?,
                         item: MenuItem?,
                     ): Boolean {
-                        val start = tv.selectionStart.coerceAtLeast(0)
-                        val end = tv.selectionEnd.coerceAtLeast(0)
+                        val start = tv.selectionStart.coerceIn(0, displayText.length)
+                        val end = tv.selectionEnd.coerceIn(0, displayText.length)
                         if (end <= start) return false
 
-                        val selected = block.text.substring(
-                            start.coerceAtMost(block.text.length),
-                            end.coerceAtMost(block.text.length),
-                        )
+                        val affected = segments.mapNotNull { segment ->
+                            val relativeStart = (start - segment.start)
+                                .coerceIn(0, segment.block.text.length)
+                            val relativeEnd = (end - segment.start)
+                                .coerceIn(0, segment.block.text.length)
+                            if (relativeEnd > relativeStart) {
+                                Triple(segment.block, relativeStart, relativeEnd)
+                            } else null
+                        }
+                        if (affected.isEmpty()) return false
+                        val selected = displayText.substring(start, end)
 
                         return when (item?.itemId) {
                             9101 -> {
-                                store.addHighlight(
-                                    chapter.id,
-                                    block.id,
-                                    start,
-                                    end,
-                                )
+                                affected.forEach { (source, from, to) ->
+                                    store.addHighlight(chapter.id, source.id, from, to)
+                                }
                                 mode?.finish()
                                 true
                             }
@@ -1105,14 +1123,16 @@ private fun SelectableNativeText(
                                     .setMessage("«$selected»")
                                     .setView(input)
                                     .setPositiveButton("Сохранить") { _, _ ->
-                                        store.addNote(
-                                            chapter.id,
-                                            block.id,
-                                            start,
-                                            end,
-                                            selected,
-                                            input.text.toString(),
-                                        )
+                                        affected.forEach { (source, from, to) ->
+                                            store.addNote(
+                                                chapter.id,
+                                                source.id,
+                                                from,
+                                                to,
+                                                source.text.substring(from, to),
+                                                input.text.toString(),
+                                            )
+                                        }
                                     }
                                     .setNegativeButton("Отмена", null)
                                     .show()
@@ -1120,12 +1140,9 @@ private fun SelectableNativeText(
                                 true
                             }
                             9103 -> {
-                                store.removeHighlights(
-                                    chapter.id,
-                                    block.id,
-                                    start,
-                                    end,
-                                )
+                                affected.forEach { (source, from, to) ->
+                                    store.removeHighlights(chapter.id, source.id, from, to)
+                                }
                                 mode?.finish()
                                 true
                             }
