@@ -95,6 +95,19 @@ private fun SemanticReaderHeading(icon: ImageVector, label: String) {
  * unmistakable continuations, leaving all source blocks/IDs untouched.
  * Section headings, Quran, hadith, enumerations and citations stay separate.
  */
+/**
+ * Single source of truth for the paper variants, shared by both the actual
+ * reading page and the miniature previews in reading settings.
+ * A colour wash changes the tone but never edits/replaces the source texture.
+ */
+internal fun readerPaperOverlay(paperBackground: String): Color? = when (paperBackground) {
+    "original" -> null
+    "sage" -> Color(0xFFDDE9DA).copy(alpha = 0.36f)
+    // 6.5% was visually indistinguishable from the original. 42% gives a
+    // visibly brighter ivory sheet, retaining the original aged grain/edges.
+    else -> Color(0xFFFFFCF6).copy(alpha = 0.42f)
+}
+
 private fun joinsUnfinishedSentence(previous: BookBlock, next: BookBlock): Boolean {
     if (previous.type != "text" || next.type != "text") return false
     if (attributedScholarParagraph(previous.text) || attributedScholarParagraph(next.text)) return false
@@ -307,18 +320,9 @@ fun ReaderScreen(
                 modifier = Modifier.matchParentSize(),
                 contentScale = ContentScale.FillBounds,
             )
-            // Keep every paper fibre exactly as in the source bitmap.
-            // User options adjust only a translucent colour wash.
-            when (store.settings.paperBackground) {
-                "original" -> Unit
-                "sage" -> Box(
-                    Modifier.matchParentSize()
-                        .background(Color(0xFFE1EBDD).copy(alpha = 0.28f)),
-                )
-                else -> Box(
-                    Modifier.matchParentSize()
-                        .background(Color(0xFFFFFAF1).copy(alpha = 0.065f)),
-                )
+            // A stronger visible light-paper option; exact same bitmap.
+            readerPaperOverlay(store.settings.paperBackground)?.let { wash ->
+                Box(Modifier.matchParentSize().background(wash))
             }
         }
         // The page, status-bar area and transparent toolbar stay fixed and
