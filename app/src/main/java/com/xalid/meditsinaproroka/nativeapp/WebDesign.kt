@@ -619,14 +619,24 @@ private fun ReaderFontChip(
     onClick: () -> Unit,
 ) {
     val active = value == selected
+    val backgroundColor by animateColorAsState(
+        targetValue = if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        animationSpec = tween(170),
+        label = "readerFontBackground",
+    )
+    val strokeColor by animateColorAsState(
+        targetValue = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+        animationSpec = tween(170),
+        label = "readerFontStroke",
+    )
     Surface(
         onClick = onClick,
         modifier = modifier.height(37.dp),
-        color = if (active) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        color = backgroundColor,
         shape = RoundedCornerShape(9.dp),
         border = BorderStroke(
             if (active) 2.dp else 1.dp,
-            if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+            strokeColor,
         ),
     ) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -732,10 +742,15 @@ private fun WebChoiceGrid(
             ) {
                 rowOptions.forEach { (value, label) ->
                     val active = value == selected
+                    val backgroundColor by animateColorAsState(
+                        targetValue = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                        animationSpec = tween(170),
+                        label = "readingChoiceBackground",
+                    )
                     Surface(
                         onClick = { onSelect(value) },
                         modifier = Modifier.weight(1f),
-                        color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                        color = backgroundColor,
                         contentColor = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
                         shape = RoundedCornerShape(9.dp),
                         border = BorderStroke(
