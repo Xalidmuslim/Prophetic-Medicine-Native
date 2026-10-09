@@ -256,7 +256,7 @@ private fun StandaloneBottomNav(
         }
         Box(
             Modifier.fillMaxWidth().navigationBarsPadding()
-                .padding(start = 13.dp, end = 13.dp, top = 7.dp, bottom = 9.dp),
+                .padding(start = 13.dp, end = 13.dp, top = 4.dp, bottom = 4.dp),
         ) {
             Box(
                 Modifier.fillMaxWidth()
@@ -278,21 +278,21 @@ private fun StandaloneBottomNav(
                     )
                 }
                 Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 3.dp, vertical = 5.dp),
+                    Modifier.fillMaxWidth().padding(horizontal = 3.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     items.forEach { item ->
                         val color = if (item.selected) MaterialTheme.colorScheme.primary
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         Column(
-                            Modifier.weight(1f).heightIn(min = 55.dp)
+                            Modifier.weight(1f).heightIn(min = 51.dp)
                                 .semantics { selected = item.selected }
                                 .clickable(role = Role.Tab, onClick = item.action)
                                 .padding(vertical = 2.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center,
                         ) {
-                            AntiqueIcon(item.icon, Modifier.size(33.dp))
+                            AntiqueIcon(item.icon, Modifier.size(30.dp))
                             Spacer(Modifier.height(1.dp))
                             Text(
                                 item.label,
