@@ -178,7 +178,11 @@ fun MedicinaApp(book: BookData, store: AppStore) {
             },
             label = "sectionTransition",
         ) { route ->
-            val screenModifier = if (route == Route.Home) Modifier.fillMaxSize() else Modifier.fillMaxSize().statusBarsPadding()
+            // The Reader parchment must extend behind the transparent Android
+            // status bar; only its interactive header gets statusBarsPadding().
+            val screenModifier = if (route == Route.Home || route is Route.Reader)
+                Modifier.fillMaxSize()
+            else Modifier.fillMaxSize().statusBarsPadding()
             screenStateHolder.SaveableStateProvider(routeStateKey(route)) {
                 when (route) {
                 Route.Home -> WebHomeScreen(
