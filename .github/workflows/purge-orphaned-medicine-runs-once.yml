@@ -1,0 +1,56 @@
+name: Remove orphaned Medicine preview APK history
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/purge-orphaned-medicine-runs-once.yml']
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm original v1.0 before deleting preview history
+        run: |
+          set -euo pipefail
+          grep -Fq "versionCode 1" app/build.gradle
+          grep -Fq "versionName '1.0.0-modulecopy-preview'" app/build.gradle
+      - name: Delete runs from the old removed native-preview branch only
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request, urllib.error, time
+          base="https://api.github.com/repos/"+os.environ["GITHUB_REPOSITORY"]
+          headers={"Authorization":"Bearer "+os.environ["GH_TOKEN"],"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}
+          def do(method,path):
+              for t in range(5):
+                  try:
+                      with urllib.request.urlopen(urllib.request.Request(base+path, headers=headers, method=method), timeout=35) as r:
+                          raw=r.read()
+                          return json.loads(raw) if raw else {}
+                  except urllib.error.HTTPError as e:
+                      if e.code in [403,429,502,503] and t<4:
+                          time.sleep(10+10*t)
+                          continue
+                      if e.code==404 and method=="DELETE": return {}
+                      raise
+          runs=[]
+          page=1
+          while True:
+              arr=do("GET",f"/actions/runs?per_page=100&page={page}")["workflow_runs"]
+              runs.extend(x["id"] for x in arr if x.get("head_branch")=="codex/medicine-native-preview-20261008")
+              if len(arr)<100:break
+              page+=1
+          print("Obsolete native-preview APK runs:",len(runs),flush=True)
+          for id in runs:
+              do("DELETE",f"/actions/runs/{id}")
+              print("Deleted",id,flush=True)
+              time.sleep(.20)
+          print("Removed obsolete native-preview history; kept main and v1.0 source.",flush=True)
+          PY
