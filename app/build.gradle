@@ -16,6 +16,14 @@ android {
         versionName '1.0.0-modulecopy-preview'
     }
 
+    buildTypes {
+        debug {
+            // Review-only build; install beside existing Medicine without
+            // removing the user's app or its locally saved annotations.
+            applicationIdSuffix '.homesmooth'
+        }
+    }
+
     buildFeatures {
         compose true
         buildConfig false
