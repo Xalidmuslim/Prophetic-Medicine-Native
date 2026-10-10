@@ -18,6 +18,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -302,9 +305,19 @@ fun SearchScreen(
     modifier: Modifier,
     onOpen: (String, String?) -> Unit,
 ) {
-    val results = remember(book, query, filter) { searchBook(book, query, filter) }
+    // Keep full-book searches off the UI thread and cancel obsolete queries.
+    val resultsState = remember(book, query, filter) { mutableStateOf<List<SearchHit>?>(null) }
+    LaunchedEffect(book, query, filter) {
+        if (query.trim().length >= 2) {
+            delay(180)
+            resultsState.value = withContext(Dispatchers.Default) {
+                searchBook(book, query, filter)
+            }
+        }
+    }
+    val results = resultsState.value
     Column(modifier.fillMaxSize()) {
-        PageHeader("Поиск", if (query.length >= 2) "${results.size} результатов" else null)
+        PageHeader("Поиск", if (query.length >= 2) (if (results == null) "Поиск…" else "${results.size} результатов") else null)
         OutlinedTextField(
             value = query,
             onValueChange = onQuery,
@@ -319,9 +332,10 @@ fun SearchScreen(
         }
         when {
             query.length < 2 -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Введите не менее двух символов", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            results == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             results.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Ничего не найдено", color = MaterialTheme.colorScheme.onSurfaceVariant) }
             else -> LazyColumn(contentPadding = PaddingValues(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                itemsIndexed(results, key = { index, hit -> "${hit.chapterId}-${hit.anchor}-§index" }) { _, hit ->
+                itemsIndexed(results, key = { index, hit -> "${hit.chapterId}-${hit.anchor}-$index" }) { _, hit ->
                     Card(Modifier.fillMaxWidth().clickable { onOpen(hit.chapterId, hit.anchor) }) {
                         Column(Modifier.padding(15.dp)) {
                             Text(hit.chapterTitle, fontWeight = FontWeight.SemiBold, lineHeight = 19.sp)
