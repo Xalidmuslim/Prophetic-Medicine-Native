@@ -16,6 +16,14 @@ android {
         versionName '1.0.0-modulecopy-preview'
     }
 
+    buildTypes {
+        debug {
+            // Side-by-side preview. Do not replace the installed production
+            // app or another performance test's bookmark/progress storage.
+            applicationIdSuffix '.firstframe'
+        }
+    }
+
     buildFeatures {
         compose true
         buildConfig false
