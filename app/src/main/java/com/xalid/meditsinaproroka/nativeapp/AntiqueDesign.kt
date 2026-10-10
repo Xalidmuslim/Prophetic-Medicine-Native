@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -49,7 +48,7 @@ internal val AntiqueBorder = Color(0xFFDCCAB1)
 @Composable
 internal fun AntiqueIcon(@DrawableRes resource: Int, modifier: Modifier, description: String? = null,
                          scale: ContentScale = ContentScale.Fit) {
-    Image(painterResource(resource), description, modifier, contentScale = scale)
+    Image(MedicineHomeArtwork.painter(resource), description, modifier, contentScale = scale)
 }
 
 /** The scalable frame, text and click target are native; artwork is a separate layer. */
@@ -61,6 +60,8 @@ private fun PaperCard(
 ) {
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
     Surface(
+        // Do not force an off-screen framebuffer per card: on mid-range
+        // devices it consumes extra memory/bandwidth while scrolling.
         modifier = modifier.then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
         color = if (dark) MaterialTheme.colorScheme.surface else Color.Transparent,
         shape = if (dark) RoundedCornerShape(13.dp) else RectangleShape,
@@ -68,29 +69,34 @@ private fun PaperCard(
         shadowElevation = 0.dp,
     ) {
         val context = LocalContext.current
-        val frame = remember(context) { requireNotNull(context.getDrawable(R.drawable.antique_card_frame)) }
+        val frame = remember(context) { MedicineHomeArtwork.newCardFrame(context) }
+        val paperGradient = remember {
+            Brush.horizontalGradient(
+                0f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
+                0.12f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
+                0.88f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
+                1f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
+            )
+        }
         Box(Modifier.drawBehind {
             if (!dark) drawIntoCanvas { canvas ->
-                frame.setBounds(0, 0, size.width.toInt(), size.height.toInt())
+                val width = size.width.toInt()
+                val height = size.height.toInt()
+                if (frame.bounds.width() != width || frame.bounds.height() != height) {
+                    frame.setBounds(0, 0, width, height)
+                }
                 frame.draw(canvas.nativeCanvas)
             }
         }) {
             if (!dark) {
                 Image(
-                    painterResource(R.drawable.antique_card_paper), null,
+                    MedicineHomeArtwork.painter(R.drawable.antique_card_paper), null,
                     Modifier.matchParentSize().padding(4.dp).clip(RoundedCornerShape(10.dp)),
                     contentScale = ContentScale.Crop, alpha = 0.36f,
                 )
                 Box(
                     Modifier.matchParentSize().padding(5.dp).clip(RoundedCornerShape(9.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                0f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
-                                0.12f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
-                                0.88f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
-                                1f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
-                            )
-                        )
+                        .background(paperGradient)
                 )
             }
             content()
@@ -109,7 +115,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
         val heroHeight = maxWidth / 3.45f
         if (!dark) {
             // Image begins at y=0 so Android's transparent status bar belongs to the same paper.
-            Image(painterResource(R.drawable.antique_hero_refined), null,
+            Image(MedicineHomeArtwork.painter(R.drawable.antique_hero_refined), null,
                 Modifier.fillMaxWidth().height(148.dp).align(Alignment.TopCenter),
                 contentScale = ContentScale.Crop)
             Box(
@@ -132,7 +138,7 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
                 .padding(start = 14.dp, end = 12.dp, top = 9.dp, bottom = 12.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(painterResource(R.drawable.medicine_launcher_book), "Настройки чтения",
+                Image(MedicineHomeArtwork.painter(R.drawable.medicine_launcher_book), "Настройки чтения",
                     Modifier.size(70.dp).clip(RoundedCornerShape(15.dp)).clickable(role = Role.Button, onClick = onSettings),
                     contentScale = ContentScale.Fit)
                 if (!enlarged) {
@@ -259,13 +265,13 @@ internal fun AntiqueHomeScreen(
     }
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
     Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        if (!dark) Image(painterResource(R.drawable.antique_parchment), null,
+        if (!dark) Image(MedicineHomeArtwork.painter(R.drawable.antique_parchment), null,
             Modifier.matchParentSize(), contentScale = ContentScale.Crop, alpha = 0.72f)
         // No clipped leaves over the page edges; the image stays within the header.
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            item { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
-            item {
+            item(key = "hero", contentType = "hero") { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
+            item(key = "hadith") {
                 // The same real antique edge artwork used by other book cards.
                 // Text remains native, selectable by accessibility and crisp.
                 PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp)) {
@@ -301,7 +307,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "reading") {
                 Box(Modifier.padding(horizontal = 14.dp)) {
                     ReadingCard(continueTitle, pct, last != null) {
                         val chapter = last ?: book.chapters.firstOrNull()
@@ -309,7 +315,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "search") {
                 PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp), onClick = { navigate(Route.Search) }) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = 10.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically) {
@@ -322,7 +328,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "treatments") {
                 PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp), onClick = { navigate(Route.Treatments) }) {
                     Row(Modifier.fillMaxWidth().padding(start = 5.dp, end = 10.dp, top = 3.dp, bottom = 3.dp),
                         verticalAlignment = Alignment.CenterVertically) {
@@ -340,20 +346,20 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "quick-books") {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AntiqueQuickCard(R.drawable.antique_books_detail, "Читать книгу", "${book.chapters.size} глав", Modifier.weight(1f)) { navigate(Route.Book) }
                     AntiqueQuickCard(R.drawable.antique_scroll_detail, "Темы", "${book.topics.size} разделов", Modifier.weight(1f)) { navigate(Route.Topics) }
                 }
             }
-            item {
+            item(key = "quick-remedies") {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AntiqueQuickCard(R.drawable.antique_remedies_detail, "Средства", "${book.remedies.size} позиций", Modifier.weight(1f)) { navigate(Route.Remedies) }
                     AntiqueQuickCard(R.drawable.antique_bookmark_detail, "Закладки", "${store.bookmarks.size} сохранено", Modifier.weight(1f)) { navigate(Route.Bookmarks) }
                 }
             }
             if (quickCollections.isNotEmpty()) {
-                item {
+                item(key = "collections-heading") {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Быстрые подборки", Modifier.weight(1f), fontFamily = WebLiterataFont,
                             fontWeight = FontWeight.Bold, fontSize = 19.sp)
@@ -361,7 +367,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
                 for (rowIndex in 0 until ((quickCollections.size + 1) / 2)) {
-                    item {
+                    item(key = "collections-$rowIndex") {
                         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
                             val first = quickCollections.getOrNull(rowIndex * 2)
                             val second = quickCollections.getOrNull(rowIndex * 2 + 1)
@@ -372,7 +378,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "study") {
                 Column(Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Продолжить изучение", fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold, fontSize = 19.sp)
                     // Wrap at narrower widths / larger system fonts instead of horizontal scroll.

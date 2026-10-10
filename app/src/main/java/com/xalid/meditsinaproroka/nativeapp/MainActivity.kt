@@ -84,6 +84,12 @@ class MainActivity : ComponentActivity() {
                         val store = MedicineRuntimeWarmup.getOrCreateStore(appContext)
                         store.syncSharedTheme()
                         val bookResult = MedicineBookCache.getOrLoad(appContext)
+                        // Decode home artwork while the loading screen is still
+                        // visible. The first Home frame should never synchronously
+                        // decode the hero, paper tiles or bottom-navigation icons.
+                        if (bookResult.isSuccess) {
+                            MedicineHomeArtwork.preload(appContext)
+                        }
                         bookResult.exceptionOrNull()?.let { error ->
                             Log.e(TAG, "Failed to load bundled book.json", error)
                         }
