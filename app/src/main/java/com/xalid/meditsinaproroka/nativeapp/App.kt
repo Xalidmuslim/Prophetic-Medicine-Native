@@ -5,13 +5,10 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -114,13 +111,10 @@ fun MedicinaApp(book: BookData, store: AppStore) {
         AnimatedContent(
             targetState = current,
             transitionSpec = {
-                (
-                    fadeIn(animationSpec = tween(150)) +
-                        scaleIn(initialScale = 0.992f, animationSpec = tween(150))
-                ).togetherWith(
-                    fadeOut(animationSpec = tween(150)) +
-                        scaleOut(targetScale = 0.996f, animationSpec = tween(150))
-                ).using(SizeTransform(clip = false))
+                // Keep the transition lightweight: no scaling or size animation
+                // while the destination reader is creating its first visible items.
+                fadeIn(animationSpec = tween(120))
+                    .togetherWith(fadeOut(animationSpec = tween(100)))
             },
             label = "sectionTransition",
         ) { route ->
