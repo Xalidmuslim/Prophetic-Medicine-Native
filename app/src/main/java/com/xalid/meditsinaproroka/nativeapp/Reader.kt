@@ -22,6 +22,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -30,6 +32,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,8 +41,6 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.math.roundToInt
 
 /** Semantic decoration only; chapter text and stored selection indices are unchanged. */
 private fun attributedScholarParagraph(text: String): Boolean {
@@ -153,7 +153,7 @@ fun ReaderScreen(
         return
     }
 
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
     // Keep one layout coordinate for every original block so progress,
     // anchors, bookmarks and resume positions continue to work.
     val paragraphGroupStart = remember(chapter.id, chapter.blocks) {
@@ -164,6 +164,23 @@ fun ReaderScreen(
                 }
             }
         }
+    }
+    // Compose only paragraphs near the viewport. Original source blocks remain
+    // unchanged so selection, notes and highlights retain their exact IDs.
+    val groupStarts = remember(chapter.id, paragraphGroupStart) {
+        chapter.blocks.indices.filter { paragraphGroupStart[it] == it }
+    }
+    val groupIndexForBlock = remember(chapter.id, paragraphGroupStart) {
+        IntArray(chapter.blocks.size).also { result ->
+            var group = -1
+            for (index in chapter.blocks.indices) {
+                if (paragraphGroupStart[index] == index) group++
+                result[index] = group.coerceAtLeast(0)
+            }
+        }
+    }
+    var initialJumpDone by rememberSaveable(chapter.id, route.anchor, route.resume) {
+        mutableStateOf(false)
     }
     val foregroundOpacity = remember(chapter.id, animateEntrance) {
         // Almost imperceptible finish; do not reveal any intermediary surface.
@@ -198,25 +215,14 @@ fun ReaderScreen(
         }
     }
 
-    val blockOffsets = remember(chapter.id) {
-        IntArray(chapter.blocks.size) { -1 }
-    }
-    val blockMeasured = remember(chapter.id) {
-        BooleanArray(chapter.blocks.size)
-    }
-    var measuredBlockCount by remember(chapter.id) {
-        mutableIntStateOf(0)
-    }
-    var bodyTopPx by remember(chapter.id) {
-        mutableIntStateOf(-1)
-    }
-    val bodyMeasured =
-        bodyTopPx >= 0 &&
-            (chapter.blocks.isEmpty() ||
-                measuredBlockCount == chapter.blocks.size)
-
-    val latestVisibleBlock = remember(chapter.id) {
-        intArrayOf(0)
+    fun visibleBlockIndex(): Int {
+        if (chapter.blocks.isEmpty()) return 0
+        val row = scrollState.firstVisibleItemIndex - 1
+        return when {
+            row < 0 -> 0
+            row >= groupStarts.size -> chapter.blocks.lastIndex
+            else -> groupStarts[row]
+        }
     }
 
     val targetBlock = remember(
@@ -246,66 +252,33 @@ fun ReaderScreen(
         store.addHistory(chapter.id, route.anchor)
     }
 
-    LaunchedEffect(
-        chapter.id,
-        route.anchor,
-        route.resume,
-        bodyMeasured,
-        targetBlock,
-    ) {
-        if (!bodyMeasured) return@LaunchedEffect
-
-        if (
-            (route.anchor != null || route.resume) &&
-            chapter.blocks.isNotEmpty()
-        ) {
-            val y = bodyTopPx +
-                blockOffsets[targetBlock].coerceAtLeast(0)
-            scrollState.scrollTo(y.coerceIn(0, scrollState.maxValue))
-            latestVisibleBlock[0] = targetBlock
-        } else {
-            scrollState.scrollTo(0)
-            latestVisibleBlock[0] = 0
+    LaunchedEffect(chapter.id, route.anchor, route.resume, targetBlock) {
+        if (!initialJumpDone) {
+            if ((route.anchor != null || route.resume) && chapter.blocks.isNotEmpty()) {
+                // Heading is row 0; each paragraph group follows.
+                scrollState.scrollToItem(groupIndexForBlock[targetBlock] + 1)
+            } else {
+                scrollState.scrollToItem(0)
+            }
+            initialJumpDone = true
         }
     }
 
-    fun visibleBlockIndex(scrollY: Int): Int {
-        if (chapter.blocks.isEmpty()) return 0
-
-        val relativeY = (scrollY - bodyTopPx).coerceAtLeast(0)
-        var best = 0
-        for (index in blockOffsets.indices) {
-            val top = blockOffsets[index]
-            if (top < 0 || top > relativeY) break
-            best = index
-        }
-        return best.coerceIn(0, chapter.blocks.lastIndex)
-    }
-
-    LaunchedEffect(chapter.id, scrollState, bodyMeasured) {
-        if (!bodyMeasured) return@LaunchedEffect
-
+    LaunchedEffect(chapter.id, scrollState) {
         snapshotFlow { scrollState.isScrollInProgress }
             .distinctUntilChanged()
             .collect { scrolling ->
-                if (!scrolling) {
-                    val blockIndex =
-                        visibleBlockIndex(scrollState.value)
-                    latestVisibleBlock[0] = blockIndex
-                    store.setLastPosition(
-                        chapter.id,
-                        blockIndex,
-                    )
+                if (!scrolling && initialJumpDone) {
+                    store.setLastPosition(chapter.id, visibleBlockIndex())
                 }
             }
     }
 
-    DisposableEffect(chapter.id) {
+    DisposableEffect(chapter.id, scrollState) {
         onDispose {
-            store.setLastPosition(
-                chapter.id,
-                latestVisibleBlock[0],
-            )
+            if (initialJumpDone) {
+                store.setLastPosition(chapter.id, visibleBlockIndex())
+            }
         }
     }
 
@@ -338,7 +311,8 @@ fun ReaderScreen(
                 )
             }
 
-            Column(
+            LazyColumn(
+                state = scrollState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
@@ -387,14 +361,13 @@ fun ReaderScreen(
                             },
                         )
                     }
-                    .verticalScroll(scrollState)
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 5.dp,
-                        bottom = 112.dp,
-                    ),
+                    ,
+                contentPadding = PaddingValues(
+                    start = 16.dp, end = 16.dp, top = 5.dp, bottom = 112.dp,
+                ),
             ) {
+                item(key = "chapter-header") {
+                    Column {
                 Text(
                     chapter.section,
                     color = MaterialTheme.colorScheme.primary,
@@ -417,63 +390,31 @@ fun ReaderScreen(
                 )
                 Spacer(Modifier.height(7.dp))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { coordinates ->
-                            if (bodyTopPx < 0) {
-                                bodyTopPx = coordinates
-                                    .positionInParent()
-                                    .y
-                                    .roundToInt()
-                                    .coerceAtLeast(0)
-                            }
-                        },
-                ) {
-                    chapter.blocks.forEachIndexed { index, block ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { coordinates ->
-                                    if (!blockMeasured[index]) {
-                                        val measuredY = coordinates
-                                            .positionInParent().y.roundToInt().coerceAtLeast(0)
-                                        val groupHead = paragraphGroupStart[index]
-                                        blockOffsets[index] =
-                                            if (groupHead < index && blockOffsets[groupHead] >= 0)
-                                                blockOffsets[groupHead]
-                                            else measuredY
-                                        blockMeasured[index] = true
-                                        measuredBlockCount += 1
-                                    }
-                                },
-                        ) {
-                            if (paragraphGroupStart[index] == index) {
-                                // Continuous sentence: one native TextView,
-                                // not multiple fake paragraphs. The originals
-                                // retain their IDs and saved annotation offsets.
-                                val end = (index + 1 until chapter.blocks.size)
-                                    .firstOrNull { paragraphGroupStart[it] != index }
-                                    ?: chapter.blocks.size
-                                if (end > index + 1) {
-                                    Box(Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
-                                        SelectableNativeText(
-                                            chapter, block, store,
-                                            mergedBlocks = chapter.blocks.subList(index, end),
-                                        )
-                                    }
-                                } else {
-                                    ReaderBlock(
-                                        chapter = chapter,
-                                        block = block,
-                                        store = store,
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
 
+                items(
+                    count = groupStarts.size,
+                    key = { row -> "paragraph:${chapter.id}:${groupStarts[row]}" },
+                    contentType = { row -> chapter.blocks[groupStarts[row]].type },
+                ) { group ->
+                    val index = groupStarts[group]
+                    val block = chapter.blocks[index]
+                    val end = groupStarts.getOrNull(group + 1) ?: chapter.blocks.size
+                    if (end > index + 1) {
+                        Box(Modifier.fillMaxWidth().padding(vertical = 7.dp)) {
+                            SelectableNativeText(
+                                chapter, block, store,
+                                mergedBlocks = chapter.blocks.subList(index, end),
+                            )
+                        }
+                    } else {
+                        ReaderBlock(chapter = chapter, block = block, store = store)
+                    }
+                }
+
+                item(key = "chapter-footer") {
+                    Column {
                 Spacer(Modifier.height(20.dp))
                 Row(
                     Modifier.fillMaxWidth(),
@@ -639,6 +580,8 @@ fun ReaderScreen(
                             label = { Text(remedy.title) },
                             modifier = Modifier.fillMaxWidth(),
                         )
+                    }
+                }
                     }
                 }
             }
