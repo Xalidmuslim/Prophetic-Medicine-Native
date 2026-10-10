@@ -68,7 +68,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -328,7 +327,7 @@ private fun StandaloneBottomNav(
             ) {
                 if (!dark) {
                     Image(
-                        painter = painterResource(R.drawable.antique_card_paper),
+                        painter = MedicineHomeArtwork.painter(R.drawable.antique_card_paper),
                         contentDescription = null,
                         modifier = Modifier.matchParentSize(),
                         contentScale = ContentScale.Crop,
