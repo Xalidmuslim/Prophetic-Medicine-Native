@@ -1,5 +1,12 @@
 # Codex instructions — Prophetic Medicine Native
 
+## Current user-verified golden baseline (10 October 2026)
+- **For any new work on the currently installed, redesigned “Медицина Пророка” app, start ONLY from** `golden/medicine-smooth-2026-10-10` at exact SHA `9a3b7cac1f24926966578e11248f0ac0e3f02a76`, **not** from `main` or old `modulecopy-preview`. This is the optimised Distinct Paper Android Release build whose first launch, home scrolling, reader scrolling and horizontal chapter swipes the user verified as smooth on their phone.
+- Full performance invariant and QA rules: **`PERFORMANCE_GOLDEN_BASELINE.md`** in `main`; read it before changes.
+- The `golden` branch is a recovery reference: **never commit to it, delete it, reset it or move it**. Create a new feature/fix branch at the exact SHA for each update. Do not merge blindly to `main` (it deliberately retains the historical original app).
+- Preserve `MedicineHomeArtwork` background bitmap preloading, independent painters, no per-card offscreen FBO, R8-enabled release build, original antique artwork, and the already-smooth lazy Reader/swipes. Regression test real-device first launch and both scroll directions; a successful Debug build is not enough. Never declare a newer golden version without user confirmation.
+- Only use the original `main` native v1.0 baseline if the user *explicitly asks* to return to that historical version.
+
 ## Baseline / scope
 - This repository is the **standalone native Android** project "Медицина Пророка".
 - Preserve the restored original Android app baseline in `main`: `versionCode 1`, `versionName '1.0.0-modulecopy-preview'`. **Do not redesign or change app code, content, navigation, version, or resources unless the user explicitly requests that change.**
