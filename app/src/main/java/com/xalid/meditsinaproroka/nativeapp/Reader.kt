@@ -16,17 +16,19 @@ import android.widget.TextView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -34,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +61,7 @@ fun ReaderScreen(
         return
     }
 
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
     var settingsOpen by remember { mutableStateOf(false) }
     var bookmarkFolderOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -75,26 +76,12 @@ fun ReaderScreen(
         }
     }
 
-    val blockOffsets = remember(chapter.id) {
-        IntArray(chapter.blocks.size) { -1 }
+    // Save this flag together with the lazy list state so returning to a chapter
+    // restores the exact scroll position instead of jumping to the beginning.
+    var initialJumpDone by rememberSaveable(chapter.id, route.anchor, route.resume) {
+        mutableStateOf(false)
     }
-    val blockMeasured = remember(chapter.id) {
-        BooleanArray(chapter.blocks.size)
-    }
-    var measuredBlockCount by remember(chapter.id) {
-        mutableIntStateOf(0)
-    }
-    var bodyTopPx by remember(chapter.id) {
-        mutableIntStateOf(-1)
-    }
-    val bodyMeasured =
-        bodyTopPx >= 0 &&
-            (chapter.blocks.isEmpty() ||
-                measuredBlockCount == chapter.blocks.size)
-
-    val latestVisibleBlock = remember(chapter.id) {
-        intArrayOf(0)
-    }
+    val latestVisibleBlock = remember(chapter.id) { intArrayOf(0) }
 
     val targetBlock = remember(
         chapter.id,
@@ -123,66 +110,39 @@ fun ReaderScreen(
         store.addHistory(chapter.id, route.anchor)
     }
 
-    LaunchedEffect(
-        chapter.id,
-        route.anchor,
-        route.resume,
-        bodyMeasured,
-        targetBlock,
-    ) {
-        if (!bodyMeasured) return@LaunchedEffect
-
-        if (
-            (route.anchor != null || route.resume) &&
-            chapter.blocks.isNotEmpty()
-        ) {
-            val y = bodyTopPx +
-                blockOffsets[targetBlock].coerceAtLeast(0)
-            scrollState.scrollTo(y.coerceIn(0, scrollState.maxValue))
+    LaunchedEffect(chapter.id, route.anchor, route.resume, targetBlock) {
+        if (!initialJumpDone) {
+            if ((route.anchor != null || route.resume) && chapter.blocks.isNotEmpty()) {
+                // Lazy list index 0 is the chapter header; blocks begin at index 1.
+                scrollState.scrollToItem(targetBlock + 1)
+            } else {
+                scrollState.scrollToItem(0)
+            }
             latestVisibleBlock[0] = targetBlock
-        } else {
-            scrollState.scrollTo(0)
-            latestVisibleBlock[0] = 0
+            initialJumpDone = true
         }
     }
 
-    fun visibleBlockIndex(scrollY: Int): Int {
-        if (chapter.blocks.isEmpty()) return 0
-
-        val relativeY = (scrollY - bodyTopPx).coerceAtLeast(0)
-        var best = 0
-        for (index in blockOffsets.indices) {
-            val top = blockOffsets[index]
-            if (top < 0 || top > relativeY) break
-            best = index
-        }
-        return best.coerceIn(0, chapter.blocks.lastIndex)
-    }
-
-    LaunchedEffect(chapter.id, scrollState, bodyMeasured) {
-        if (!bodyMeasured) return@LaunchedEffect
-
+    LaunchedEffect(chapter.id, scrollState) {
         snapshotFlow { scrollState.isScrollInProgress }
             .distinctUntilChanged()
             .collect { scrolling ->
-                if (!scrolling) {
-                    val blockIndex =
-                        visibleBlockIndex(scrollState.value)
-                    latestVisibleBlock[0] = blockIndex
-                    store.setLastPosition(
-                        chapter.id,
-                        blockIndex,
-                    )
+                if (!scrolling && initialJumpDone) {
+                    val index = (scrollState.firstVisibleItemIndex - 1)
+                        .coerceIn(0, (chapter.blocks.size - 1).coerceAtLeast(0))
+                    latestVisibleBlock[0] = index
+                    store.setLastPosition(chapter.id, index)
                 }
             }
     }
 
-    DisposableEffect(chapter.id) {
+    DisposableEffect(chapter.id, scrollState) {
         onDispose {
-            store.setLastPosition(
-                chapter.id,
-                latestVisibleBlock[0],
-            )
+            if (initialJumpDone) {
+                val index = (scrollState.firstVisibleItemIndex - 1)
+                    .coerceIn(0, (chapter.blocks.size - 1).coerceAtLeast(0))
+                store.setLastPosition(chapter.id, index)
+            }
         }
     }
 
@@ -194,18 +154,15 @@ fun ReaderScreen(
                 back,
             )
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = 104.dp,
-                    ),
+            LazyColumn(
+                state = scrollState,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    start = 16.dp, end = 16.dp, top = 8.dp, bottom = 104.dp,
+                ),
             ) {
+                item(key = "chapter-header") {
+                    Column {
                 Text(
                     chapter.section,
                     color = MaterialTheme.colorScheme.primary,
@@ -228,45 +185,19 @@ fun ReaderScreen(
                 )
                 Spacer(Modifier.height(7.dp))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { coordinates ->
-                            if (bodyTopPx < 0) {
-                                bodyTopPx = coordinates
-                                    .positionInParent()
-                                    .y
-                                    .roundToInt()
-                                    .coerceAtLeast(0)
-                            }
-                        },
-                ) {
-                    chapter.blocks.forEachIndexed { index, block ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { coordinates ->
-                                    if (!blockMeasured[index]) {
-                                        blockOffsets[index] =
-                                            coordinates
-                                                .positionInParent()
-                                                .y
-                                                .roundToInt()
-                                                .coerceAtLeast(0)
-                                        blockMeasured[index] = true
-                                        measuredBlockCount += 1
-                                    }
-                                },
-                        ) {
-                            ReaderBlock(
-                                chapter = chapter,
-                                block = block,
-                                store = store,
-                            )
-                        }
                     }
                 }
 
+                itemsIndexed(
+                    items = chapter.blocks,
+                    key = { index, block -> "${chapter.id}:${block.id}:$index" },
+                    contentType = { _, block -> block.type },
+                ) { _, block ->
+                    ReaderBlock(chapter = chapter, block = block, store = store)
+                }
+
+                item(key = "chapter-footer") {
+                    Column {
                 Spacer(Modifier.height(20.dp))
                 Row(
                     Modifier.fillMaxWidth(),
@@ -436,6 +367,8 @@ fun ReaderScreen(
                             label = { Text(remedy.title) },
                             modifier = Modifier.fillMaxWidth(),
                         )
+                    }
+                }
                     }
                 }
             }
