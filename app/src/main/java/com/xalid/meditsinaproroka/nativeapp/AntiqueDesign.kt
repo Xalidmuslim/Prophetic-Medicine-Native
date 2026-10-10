@@ -22,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
@@ -61,7 +63,11 @@ private fun PaperCard(
 ) {
     val dark = MaterialTheme.colorScheme.background.red < 0.25f
     Surface(
-        modifier = modifier.then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
+        modifier = modifier
+            .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+            // Composite unchanged paper artwork and its translucent layers
+            // only when the card content changes, not on each fling frame.
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen },
         color = if (dark) MaterialTheme.colorScheme.surface else Color.Transparent,
         shape = if (dark) RoundedCornerShape(13.dp) else RectangleShape,
         border = if (dark) BorderStroke(0.7.dp, MaterialTheme.colorScheme.outline) else null,
@@ -69,9 +75,21 @@ private fun PaperCard(
     ) {
         val context = LocalContext.current
         val frame = remember(context) { requireNotNull(context.getDrawable(R.drawable.antique_card_frame)) }
+        val paperGradient = remember {
+            Brush.horizontalGradient(
+                0f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
+                0.12f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
+                0.88f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
+                1f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
+            )
+        }
         Box(Modifier.drawBehind {
             if (!dark) drawIntoCanvas { canvas ->
-                frame.setBounds(0, 0, size.width.toInt(), size.height.toInt())
+                val width = size.width.toInt()
+                val height = size.height.toInt()
+                if (frame.bounds.width() != width || frame.bounds.height() != height) {
+                    frame.setBounds(0, 0, width, height)
+                }
                 frame.draw(canvas.nativeCanvas)
             }
         }) {
@@ -83,14 +101,7 @@ private fun PaperCard(
                 )
                 Box(
                     Modifier.matchParentSize().padding(5.dp).clip(RoundedCornerShape(9.dp))
-                        .background(
-                            Brush.horizontalGradient(
-                                0f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
-                                0.12f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
-                                0.88f to Color(0xFFFFF9F0).copy(alpha = 0.44f),
-                                1f to Color(0xFFDAC6A8).copy(alpha = 0.12f),
-                            )
-                        )
+                        .background(paperGradient)
                 )
             }
             content()
@@ -104,7 +115,10 @@ private fun AntiqueHomeHeader(book: BookData, onSettings: () -> Unit) {
     val enlarged = LocalDensity.current.fontScale > 1.15f
     // Keep the home hero tall enough for the illustration and two-line title,
     // but avoid the extra empty space that pushed Quick Collections behind nav.
-    BoxWithConstraints(Modifier.fillMaxWidth().heightIn(min = 148.dp)) {
+    BoxWithConstraints(
+        Modifier.fillMaxWidth().heightIn(min = 148.dp)
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+    ) {
         val artWidth = maxWidth * 0.34f
         val heroHeight = maxWidth / 3.45f
         if (!dark) {
@@ -264,8 +278,8 @@ internal fun AntiqueHomeScreen(
         // No clipped leaves over the page edges; the image stays within the header.
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            item { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
-            item {
+            item(key = "hero", contentType = "hero") { AntiqueHomeHeader(book) { navigate(Route.Settings) } }
+            item(key = "hadith") {
                 // The same real antique edge artwork used by other book cards.
                 // Text remains native, selectable by accessibility and crisp.
                 PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp)) {
@@ -301,7 +315,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "reading") {
                 Box(Modifier.padding(horizontal = 14.dp)) {
                     ReadingCard(continueTitle, pct, last != null) {
                         val chapter = last ?: book.chapters.firstOrNull()
@@ -309,7 +323,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "search") {
                 PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp), onClick = { navigate(Route.Search) }) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = 10.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically) {
@@ -322,7 +336,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "treatments") {
                 PaperCard(Modifier.fillMaxWidth().padding(horizontal = 14.dp), onClick = { navigate(Route.Treatments) }) {
                     Row(Modifier.fillMaxWidth().padding(start = 5.dp, end = 10.dp, top = 3.dp, bottom = 3.dp),
                         verticalAlignment = Alignment.CenterVertically) {
@@ -340,20 +354,20 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "quick-books") {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AntiqueQuickCard(R.drawable.antique_books_detail, "Читать книгу", "${book.chapters.size} глав", Modifier.weight(1f)) { navigate(Route.Book) }
                     AntiqueQuickCard(R.drawable.antique_scroll_detail, "Темы", "${book.topics.size} разделов", Modifier.weight(1f)) { navigate(Route.Topics) }
                 }
             }
-            item {
+            item(key = "quick-remedies") {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AntiqueQuickCard(R.drawable.antique_remedies_detail, "Средства", "${book.remedies.size} позиций", Modifier.weight(1f)) { navigate(Route.Remedies) }
                     AntiqueQuickCard(R.drawable.antique_bookmark_detail, "Закладки", "${store.bookmarks.size} сохранено", Modifier.weight(1f)) { navigate(Route.Bookmarks) }
                 }
             }
             if (quickCollections.isNotEmpty()) {
-                item {
+                item(key = "collections-heading") {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Быстрые подборки", Modifier.weight(1f), fontFamily = WebLiterataFont,
                             fontWeight = FontWeight.Bold, fontSize = 19.sp)
@@ -361,7 +375,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
                 for (rowIndex in 0 until ((quickCollections.size + 1) / 2)) {
-                    item {
+                    item(key = "collections-$rowIndex") {
                         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
                             val first = quickCollections.getOrNull(rowIndex * 2)
                             val second = quickCollections.getOrNull(rowIndex * 2 + 1)
@@ -372,7 +386,7 @@ internal fun AntiqueHomeScreen(
                     }
                 }
             }
-            item {
+            item(key = "study") {
                 Column(Modifier.padding(horizontal = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Продолжить изучение", fontFamily = WebLiterataFont, fontWeight = FontWeight.Bold, fontSize = 19.sp)
                     // Wrap at narrower widths / larger system fonts instead of horizontal scroll.
