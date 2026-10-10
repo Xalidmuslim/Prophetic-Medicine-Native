@@ -60,8 +60,8 @@ class MainActivity : ComponentActivity() {
             getSharedPreferences("alfatiha_native", MODE_PRIVATE).getBoolean("dark", false)
         ) "dark" else "light"
 
-        MedicineRuntimeWarmup.preload(appContext)
-
+        // The standalone Activity's IO coroutine performs the single cold load.
+        // Avoid racing it with separate preload threads on every cold launch.
         setContent {
             val warmedState = remember {
                 val warmedStore = MedicineRuntimeWarmup.peekStore()
