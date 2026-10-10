@@ -2,7 +2,7 @@ name: Medicine Home First-Frame Release Test
 
 on:
   push:
-    branches: [codex/medicine-home-first-frame-20261010]
+    branches: [codex/medicine-home-first-frame-20261010, codex/medicine-clean-app-name-20261010]
   workflow_dispatch:
 
 permissions:
@@ -35,10 +35,12 @@ jobs:
           unzip -t app/build/outputs/apk/release/app-release.apk > /dev/null
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/release/app-release.apk
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep 'firstframe'
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -F 'Медицина Пророка ﷺ'
+          ! "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/release/app-release.apk | grep -F 'тест плавности'
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: Medicine-Home-First-Frame-Optimized-APK
+          name: Medicine-Proper-Name-Optimized-APK
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
