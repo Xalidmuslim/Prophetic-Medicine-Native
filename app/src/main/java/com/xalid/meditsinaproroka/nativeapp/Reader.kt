@@ -744,21 +744,25 @@ private fun ReaderChapterSpeechBar(
                 onClick = { controller?.cycleRate() },
                 contentPadding = PaddingValues(horizontal = 4.dp),
             ) {
-                Text(String.format(java.util.Locale.ROOT, "%.2f×", controller?.rate ?: 0.95f),
+                Text(String.format(java.util.Locale.ROOT, "%.2f×", controller?.rate ?: CHAPTER_SPEECH_DEFAULT_RATE),
                     fontSize = 12.sp)
             }
             TextButton(
                 onClick = {
                     try {
-                        context.startActivity(Intent("com.android.settings.TTS_SETTINGS"))
+                        context.startActivity(
+                            Intent(Intent.ACTION_MAIN).setClassName(
+                                RUVOICE_ENGINE_PACKAGE, "ru.kost.ruvoice.SettingsActivity"
+                            )
+                        )
                     } catch (_: Exception) {
-                        Toast.makeText(context, "Откройте настройки синтеза речи Android",
+                        Toast.makeText(context, "RuVoice не найден. Установите его APK.",
                             Toast.LENGTH_LONG).show()
                     }
                 },
                 contentPadding = PaddingValues(horizontal = 6.dp),
             ) {
-                Text("Голос", fontSize = 12.sp)
+                Text("RuVoice", fontSize = 12.sp)
             }
         }
         controller?.errorMessage?.let { message ->
