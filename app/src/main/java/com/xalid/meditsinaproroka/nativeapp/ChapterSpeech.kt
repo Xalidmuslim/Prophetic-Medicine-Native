@@ -36,11 +36,19 @@ internal fun Chapter.speechSegments(maxChars: Int = 700): List<String> {
     return result
 }
 
+internal const val RUVOICE_ENGINE_PACKAGE = "ru.kost.ruvoice"
+internal const val CHAPTER_SPEECH_DEFAULT_RATE = 1.0f
+
+/** Prevent Android TTS from silently substituting a different synthesis engine. */
+internal fun isRuVoiceEngine(activeEngine: String?): Boolean =
+    activeEngine == RUVOICE_ENGINE_PACKAGE
+
 internal enum class ChapterVoiceStatus { Preparing, Ready, Playing, Paused, Error }
 
 /**
- * Uses the Android speech engine selected by the reader. The engine can be the
- * free offline neural RuVoice app; no paid API, recordings or permissions.
+ * Uses the installed RuVoice engine explicitly and its currently chosen voice.
+ * Never fall back to an unrelated Android voice without telling the reader.
+ * No paid APIs, embedded voice recordings or runtime network permissions.
  * Android TTS has no genuine mid-utterance pause; resuming repeats at most
  * one short segment, not the whole chapter.
  */
@@ -61,16 +69,20 @@ internal class ChapterSpeechController(context: Context) {
         private set
     var segmentCount by mutableIntStateOf(0)
         private set
-    var rate by mutableFloatStateOf(0.95f)
+    var rate by mutableFloatStateOf(CHAPTER_SPEECH_DEFAULT_RATE)
         private set
 
     init {
-        tts = TextToSpeech(appContext) { init ->
+        tts = TextToSpeech(appContext, { init ->
             main.post {
                 if (closed) return@post
                 val engine = tts
                 if (init != TextToSpeech.SUCCESS || engine == null) {
-                    fail("Голосовой движок Android недоступен. Установите русский голос.")
+                    fail("RuVoice недоступен. Установите RuVoice и выберите в нём голос.")
+                    return@post
+                }
+                if (!isRuVoiceEngine(engine.currentEngine)) {
+                    fail("Используется не RuVoice. Установите RuVoice и выберите голос в его настройках.")
                     return@post
                 }
                 val language = engine.setLanguage(Locale.forLanguageTag("ru-RU"))
@@ -79,20 +91,8 @@ internal class ChapterSpeechController(context: Context) {
                     fail("Русский голос не установлен. Откройте настройки голоса.")
                     return@post
                 }
-                // Prefer installed, offline male voices when their identity is
-                // known. The selected engine still controls the actual sound.
-                val voices = runCatching { engine.voices.orEmpty() }.getOrDefault(emptySet())
-                    .filter { it.locale.language == "ru" && !it.isNetworkConnectionRequired }
-                val maleNames = listOf(
-                    "aidar", "eugene", "alexandr", "dmitriy",
-                    "marat", "roman", "igor", "eduard",
-                )
-                val preferred = voices.firstOrNull { voice ->
-                    maleNames.any { voice.name.contains(it, ignoreCase = true) }
-                } ?: voices.maxByOrNull { it.quality }
-                if (preferred != null) {
-                    runCatching { engine.voice = preferred }
-                }
+                // RuVoice resolves its own selected voice (Aidar, Eugene, etc.).
+                // Never call setVoice(): that overwrites its profile and speaker selection.
                 engine.setSpeechRate(rate)
                 engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) = Unit
@@ -124,7 +124,7 @@ internal class ChapterSpeechController(context: Context) {
                     play(chapter)
                 }
             }
-        }
+        }, RUVOICE_ENGINE_PACKAGE)
     }
 
     fun play(chapter: Chapter) {
