@@ -8,9 +8,10 @@ import org.junit.Test
 class ChapterSpeechEngineTest {
     @Test fun useRuVoiceAndNeverSilentlyReplaceItWithTheAndroidDefault() {
         assertEquals("ru.kost.ruvoice", RUVOICE_ENGINE_PACKAGE)
-        assertTrue(isRuVoiceEngine("ru.kost.ruvoice"))
-        assertFalse(isRuVoiceEngine("com.google.android.tts"))
-        assertFalse(isRuVoiceEngine(null))
+        assertTrue(isRuVoiceEngine(listOf("aidar-ru", "xenia-ru")))
+        assertTrue(isRuVoiceEngine(listOf("eugene-ru")))
+        assertFalse(isRuVoiceEngine(listOf("ru-ru-x-google", "en-us-x-google")))
+        assertFalse(isRuVoiceEngine(emptyList()))
     }
 
     @Test fun useNaturalUnmodifiedSpeechRate() {
