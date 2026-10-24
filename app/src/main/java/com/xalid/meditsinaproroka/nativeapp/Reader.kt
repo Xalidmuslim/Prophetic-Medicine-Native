@@ -725,7 +725,7 @@ private fun ReaderChapterSpeechBar(
                         ChapterVoiceStatus.Playing -> "Пауза"
                         ChapterVoiceStatus.Paused -> "Продолжить"
                         ChapterVoiceStatus.Preparing -> "Готовится…"
-                        else -> "Слушать",
+                        else -> "Слушать"
                     },
                     fontSize = 12.sp,
                     maxLines = 1,
