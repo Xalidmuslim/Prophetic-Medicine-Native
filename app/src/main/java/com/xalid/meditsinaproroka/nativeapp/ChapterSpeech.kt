@@ -39,9 +39,13 @@ internal fun Chapter.speechSegments(maxChars: Int = 700): List<String> {
 internal const val RUVOICE_ENGINE_PACKAGE = "ru.kost.ruvoice"
 internal const val CHAPTER_SPEECH_DEFAULT_RATE = 1.0f
 
-/** Prevent Android TTS from silently substituting a different synthesis engine. */
-internal fun isRuVoiceEngine(activeEngine: String?): Boolean =
-    activeEngine == RUVOICE_ENGINE_PACKAGE
+/**
+ * Android's getCurrentEngine() is a hidden API. Instead check for RuVoice's
+ * documented builtin voice catalog, as an engine fallback exposes its own
+ * voices rather than the RuVoice catalog.
+ */
+internal fun isRuVoiceEngine(availableVoices: Collection<String>): Boolean =
+    availableVoices.any { it in setOf("aidar-ru", "eugene-ru", "baya-ru", "xenia-ru", "kseniya-ru") }
 
 internal enum class ChapterVoiceStatus { Preparing, Ready, Playing, Paused, Error }
 
