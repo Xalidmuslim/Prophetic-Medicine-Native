@@ -6,6 +6,12 @@
             <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
     </queries>
+    <queries>
+        <package android:name="ru.kost.ruvoice" />
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
     <application android:label="@string/app_name" android:icon="@drawable/medicine_launcher_book" android:roundIcon="@drawable/medicine_launcher_book">
         <activity
             android:name=".MainActivity"
