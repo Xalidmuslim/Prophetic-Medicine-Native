@@ -22,9 +22,10 @@ android {
             applicationIdSuffix '.firstframe'
         }
         release {
-            // An installable performance-test release (not a Play Store signature).
-            // Release + R8 avoids debug-only startup/Compose/JIT overhead.
-            applicationIdSuffix '.firstframe'
+            // Keep the previous benchmark APK installed: GitHub CI test signing keys
+            // are not shared between workflow runs, so an in-place update would fail.
+            // Install this RuVoice-fix test APK as a separate application.
+            applicationIdSuffix '.ruvoicefix'
             signingConfig signingConfigs.debug
             minifyEnabled true
             shrinkResources false
