@@ -51,6 +51,7 @@ internal class ChapterSpeechController(context: Context) {
     private var closed = false
     private var generation = 0
     private var segments: List<String> = emptyList()
+    private var pendingChapter: Chapter? = null
 
     var status by mutableStateOf(ChapterVoiceStatus.Preparing)
         private set
@@ -118,12 +119,20 @@ internal class ChapterSpeechController(context: Context) {
                     }
                 })
                 status = ChapterVoiceStatus.Ready
+                pendingChapter?.let { chapter ->
+                    pendingChapter = null
+                    play(chapter)
+                }
             }
         }
     }
 
     fun play(chapter: Chapter) {
-        if (status == ChapterVoiceStatus.Preparing || status == ChapterVoiceStatus.Error) return
+        if (status == ChapterVoiceStatus.Preparing) {
+            pendingChapter = chapter
+            return
+        }
+        if (status == ChapterVoiceStatus.Error) return
         if (status == ChapterVoiceStatus.Paused) {
             status = ChapterVoiceStatus.Playing
             speakCurrent()
@@ -151,6 +160,7 @@ internal class ChapterSpeechController(context: Context) {
     }
 
     fun stop() {
+        pendingChapter = null
         generation++
         tts?.stop()
         segmentIndex = 0
