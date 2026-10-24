@@ -85,7 +85,8 @@ internal class ChapterSpeechController(context: Context) {
                     fail("RuVoice недоступен. Установите RuVoice и выберите в нём голос.")
                     return@post
                 }
-                if (!isRuVoiceEngine(engine.currentEngine)) {
+                if (!isRuVoiceEngine(runCatching { engine.voices.orEmpty().map { it.name } }
+                        .getOrDefault(emptyList()))) {
                     fail("Используется не RuVoice. Установите RuVoice и выберите голос в его настройках.")
                     return@post
                 }
