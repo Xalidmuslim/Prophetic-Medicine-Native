@@ -3,7 +3,7 @@ name: Medicine Chapter Audio Release Validation
 on:
   push:
     branches:
-      - codex/medicine-free-chapter-voice-20261024
+      - codex/medicine-ruvoice-natural-20261024
   workflow_dispatch:
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose app/build/outputs/apk/release/app-release.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: Medicine-Free-Chapter-Audio-Release-APK
+          name: Medicine-RuVoice-Natural-Release-APK
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
