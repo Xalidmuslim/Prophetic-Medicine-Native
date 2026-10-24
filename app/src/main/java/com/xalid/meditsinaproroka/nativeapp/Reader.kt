@@ -1,6 +1,9 @@
 package com.xalid.meditsinaproroka.nativeapp
 
 import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import android.graphics.Typeface
 import android.text.Spannable
 import android.text.SpannableString
@@ -204,6 +207,12 @@ fun ReaderScreen(
     var settingsOpen by remember { mutableStateOf(false) }
     var bookmarkFolderOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    // Delay voice-engine startup until Listen is tapped: do not slow down the
+    // verified smooth first frame or any normal page/scroll operation.
+    var chapterVoice by remember(chapter.id) { mutableStateOf<ChapterSpeechController?>(null) }
+    DisposableEffect(chapter.id) {
+        onDispose { chapterVoice?.close() }
+    }
     val topics = remember(book, chapter) {
         chapter.topics.mapNotNull { id ->
             book.topics.firstOrNull { it.id == id }
@@ -382,6 +391,15 @@ fun ReaderScreen(
                     fontSize = (if (chapter.title.length > 60) 23 else 27).sp,
                     lineHeight = (if (chapter.title.length > 60) 28 else 32).sp,
                     fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(7.dp))
+                ReaderChapterSpeechBar(
+                    chapter = chapter,
+                    controller = chapterVoice,
+                    createController = {
+                        chapterVoice?.close()
+                        ChapterSpeechController(context).also { chapterVoice = it }
+                    },
                 )
                 Spacer(Modifier.height(8.dp))
                 HorizontalDivider(
@@ -663,6 +681,112 @@ fun ReaderScreen(
                 }
             },
         )
+    }
+}
+
+@Composable
+private fun ReaderChapterSpeechBar(
+    chapter: Chapter,
+    controller: ChapterSpeechController?,
+    createController: () -> ChapterSpeechController,
+) {
+    val context = LocalContext.current
+    val status = controller?.status ?: ChapterVoiceStatus.Ready
+    val playing = status == ChapterVoiceStatus.Playing
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(1.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            FilledTonalButton(
+                onClick = {
+                    if (playing) {
+                        controller?.pause()
+                    } else {
+                        val active = if (controller == null ||
+                            status == ChapterVoiceStatus.Error) createController() else controller
+                        active.play(chapter)
+                    }
+                },
+                contentPadding = PaddingValues(horizontal = 11.dp, vertical = 7.dp),
+            ) {
+                Icon(
+                    if (playing) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(19.dp),
+                )
+                Spacer(Modifier.width(3.dp))
+                Text(
+                    when (status) {
+                        ChapterVoiceStatus.Playing -> "Пауза"
+                        ChapterVoiceStatus.Paused -> "Продолжить"
+                        ChapterVoiceStatus.Preparing -> "Готовится…"
+                        else -> "Слушать",
+                    },
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                )
+            }
+            if (status == ChapterVoiceStatus.Playing ||
+                status == ChapterVoiceStatus.Paused ||
+                status == ChapterVoiceStatus.Preparing) {
+                IconButton(onClick = { controller?.stop() }, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.Default.Stop, contentDescription = "Остановить чтение")
+                }
+            }
+            Spacer(Modifier.weight(1f))
+            TextButton(
+                enabled = controller != null,
+                onClick = { controller?.cycleRate() },
+                contentPadding = PaddingValues(horizontal = 4.dp),
+            ) {
+                Text(String.format(java.util.Locale.ROOT, "%.2f×", controller?.rate ?: 0.95f),
+                    fontSize = 12.sp)
+            }
+            TextButton(
+                onClick = {
+                    try {
+                        context.startActivity(Intent("com.android.settings.TTS_SETTINGS"))
+                    } catch (_: Exception) {
+                        Toast.makeText(context, "Откройте настройки синтеза речи Android",
+                            Toast.LENGTH_LONG).show()
+                    }
+                },
+                contentPadding = PaddingValues(horizontal = 6.dp),
+            ) {
+                Text("Голос", fontSize = 12.sp)
+            }
+        }
+        controller?.errorMessage?.let { message ->
+            Text(message, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+        }
+        if (status == ChapterVoiceStatus.Playing || status == ChapterVoiceStatus.Paused) {
+            Text(
+                "Фрагмент ${(controller?.segmentIndex ?: 0) + 1} из ${controller?.segmentCount ?: 0}",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        TextButton(
+            onClick = {
+                try {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW,
+                            Uri.parse("https://github.com/kost-t-human/ruvoice-tts/releases"))
+                    )
+                } catch (_: Exception) {
+                    Toast.makeText(context, "Не удалось открыть страницу голосового движка",
+                        Toast.LENGTH_LONG).show()
+                }
+            },
+            contentPadding = PaddingValues(horizontal = 0.dp, vertical = 0.dp),
+        ) {
+            Text("Бесплатный нейроголос RuVoice (установка)", fontSize = 11.sp)
+        }
     }
 }
 
