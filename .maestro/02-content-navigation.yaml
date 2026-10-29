@@ -1,0 +1,12 @@
+appId: com.xalid.meditsinaproroka.nativeapp.modulecopy.firstframe
+name: Prophetic Medicine - contents and search navigation
+tags:
+  - regression
+---
+- launchApp:
+    clearState: true
+- tapOn: "Читать книгу"
+- assertVisible: "Содержание"
+- back
+- tapOn: "Поиск"
+- assertVisible: "Введите слово или фразу"
