@@ -51,12 +51,17 @@ jobs:
           api-level: 34
           target: google_apis
           arch: x86_64
-          script: |
-            bash -euo pipefail -c 'adb install -r app/build/outputs/apk/debug/app-debug.apk; maestro test .maestro 2>&1 | tee maestro-output.log'
+          ram-size: 3072M
+          heap-size: 512M
+          script: bash .maestro/run-ci.sh
       - name: Upload Maestro logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: medicine-maestro-logs
-          path: maestro-output.log
+          path: |
+            maestro-home.log
+            maestro-content.log
+            android-logcat.txt
+            adb-final.txt
           if-no-files-found: ignore
