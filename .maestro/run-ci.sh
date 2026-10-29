@@ -9,5 +9,5 @@ trap on_exit EXIT
 
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb shell pm path com.xalid.meditsinaproroka.nativeapp.modulecopy.firstframe
-maestro test .maestro/01-home-smoke.yaml 2>&1 | tee maestro-home.log
-maestro test .maestro/02-content-navigation.yaml 2>&1 | tee maestro-content.log
+timeout -k 10s 180s maestro test .maestro/01-home-smoke.yaml 2>&1 | tee maestro-home.log
+timeout -k 10s 180s maestro test .maestro/02-content-navigation.yaml 2>&1 | tee maestro-content.log
