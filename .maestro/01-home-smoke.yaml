@@ -1,0 +1,9 @@
+appId: com.xalid.meditsinaproroka.nativeapp.modulecopy.firstframe
+name: Prophetic Medicine - golden home smoke
+tags:
+  - smoke
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Медицина Пророка ﷺ"
+- assertVisible: "Продолжить чтение"
